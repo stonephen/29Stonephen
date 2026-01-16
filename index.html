@@ -1,0 +1,2666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Pan词汇检测系统（Day 1-29）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #1a2980, #26d0ce);
+            color: yellow;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header p {
+            font-size: 1.8rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f0f7ff;
+            border-bottom: 2px solid #e0f0ff;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            background: none;
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #1a2980;
+            border-bottom: 4px solid #1a2980;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 41, 128, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* 点名功能样式 */
+        .call-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .display-area {
+            width: 100%;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 15px 30px rgba(26, 41, 128, 0.3);
+            position: relative;
+            overflow: hidden;
+            height: 180px;
+        }
+        
+        .name-display {
+            font-size: 4rem;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            word-break: keep-all;
+            white-space: nowrap;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+        }
+        
+        .placeholder {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+        
+        .message {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            text-align: center;
+            min-height: 30px;
+            margin-top: 10px;
+        }
+        
+        .call-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 18px 30px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+        }
+        
+        .btn-call {
+            background: linear-gradient(to right, #FF416C, #FF4B2B);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        /* 词汇抽查功能样式 */
+        .vocab-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .vocab-display-area {
+            width: 100%;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            height: 240px; /* 从200px增加到240px（约120%） */
+        }
+        
+        .en-to-cn-area {
+            background: linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%);
+            box-shadow: 0 15px 30px rgba(138, 43, 226, 0.3);
+        }
+        
+        .cn-to-en-area {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+            box-shadow: 0 15px 30px rgba(0, 176, 155, 0.3);
+        }
+        
+        .vocab-display {
+            font-size: 3.5rem;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            word-break: keep-all;
+            white-space: nowrap;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+            min-height: 70px;
+        }
+        
+        .answer-display {
+            font-size: 2.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .vocab-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .unit-buttons {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .unit-btn {
+            padding: 15px 5px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .en-to-cn-btn {
+            background: linear-gradient(to right, #FFA500, #FF8C00);
+        }
+        
+        .cn-to-en-btn {
+            background: linear-gradient(to right, #36D1DC, #5B86E5);
+        }
+        
+        .unit-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .unit-btn.active {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .en-to-cn-btn.active {
+            background: linear-gradient(to right, #8A2BE2, #4B0082);
+        }
+        
+        .cn-to-en-btn.active {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+        
+        .vocab-btn-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .btn-vocab {
+            min-width: 280px;
+            color: white;
+            font-size: 1.3rem;
+            padding: 22px;
+        }
+        
+        .btn-en-to-cn {
+            background: linear-gradient(to right, #8A2BE2, #4B0082);
+        }
+        
+        .btn-cn-to-en {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+        
+        .btn-show-answer {
+            background: linear-gradient(to right, #FFA500, #FF8C00);
+            color: white;
+            min-width: 200px;
+        }
+        
+        .btn-reset-unit {
+            background: linear-gradient(to right, #FF416C, #FF4B2B);
+            color: white;
+            min-width: 200px;
+        }
+        
+        .history-section {
+            background-color: #f0f9ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .history-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2980;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .time-badge {
+            background: #e0f0ff;
+            color: #1a2980;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .unit-badge {
+            background: #8A2BE2;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .cn-to-en-badge {
+            background: #00b09b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .animation-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 4s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-25px) translateX(15px); }
+        }
+        
+        .flashing {
+            animation: flash 0.7s infinite alternate;
+        }
+        
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0.7; }
+        }
+        
+        .instructions {
+            background-color: #e8f4ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 6px solid #1a2980;
+        }
+        
+        .instructions h4 {
+            color: #1a2980;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .answer-hidden {
+            filter: blur(8px);
+            user-select: none;
+        }
+        
+        .mode-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 6px 15px; /* 从8px减少到6px */
+            border-radius: 15px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.15);
+            height: auto;
+            min-height: 34px; /* 从40px减少到34px（约85%） */
+            /* 隐藏文字内容 */
+            visibility: hidden;
+        }
+        
+        .mode-text {
+            font-size: 1.3rem;
+            color: white;
+            font-weight: bold;
+            /* 隐藏文字内容 */
+            visibility: hidden;
+        }
+        
+        .progress-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            margin-top: 10px;
+            padding: 6px 15px; /* 从8px减少到6px */
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 1rem;
+            width: 90%;
+            text-align: center;
+            height: 60px; /* 从70px减少到60px（约85%） */
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4ECDC4, #44A08D);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        @media (max-width: 1200px) {
+            .unit-buttons {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tab-btn {
+                font-size: 1.8rem;
+                padding: 15px;
+            }
+            
+            .name-display {
+                font-size: 3.2rem;
+            }
+            
+            .vocab-display {
+                font-size: 2.8rem;
+            }
+            
+            .answer-display {
+                font-size: 1.8rem;
+            }
+            
+            .unit-buttons {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .btn {
+                min-width: 180px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .tab-btn {
+                padding: 12px;
+                font-size: 1.4rem;
+            }
+            
+            .name-display {
+                font-size: 2.5rem;
+            }
+            
+            .vocab-display {
+                font-size: 2.2rem;
+                min-height: 60px;
+            }
+            
+            .answer-display {
+                font-size: 1.5rem;
+                min-height: 50px;
+            }
+            
+            .mode-text {
+                font-size: 1.1rem;
+            }
+            
+            .placeholder {
+                font-size: 2rem;
+            }
+            
+            .unit-buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .vocab-btn-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .call-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .unit-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .name-display {
+                font-size: 2rem;
+            }
+            
+            .vocab-display {
+                font-size: 1.8rem;
+                min-height: 50px;
+            }
+            
+            .answer-display {
+                font-size: 1.3rem;
+                min-height: 45px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1.4rem;
+            }
+            
+            .vocab-display-area {
+                height: 220px; /* 在移动端也保持较高高度 */
+                padding: 20px;
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 主工具界面 -->
+    <div class="container" id="main-container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-chalkboard-teacher"></i>
+                Mr. Pan词汇检测系统（Day 1-29）
+            </h1>
+            <p>| 随机点名 | 英译汉 | 汉译英 |</p>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="call">
+                <i class="fas fa-random"></i>
+                随机点名
+            </button>
+            <button class="tab-btn" data-tab="en-to-cn">
+                <i class="fas fa-language"></i>
+                英译汉
+            </button>
+            <button class="tab-btn" data-tab="cn-to-en">
+                <i class="fas fa-exchange-alt"></i>
+                汉译英
+            </button>
+        </div>
+        
+        <!-- 点名功能 -->
+        <div id="call-tab" class="tab-content active">
+            <div class="call-section">
+                <div class="display-area">
+                    <!-- 动画装饰点 -->
+                    <div class="animation-dot" style="top: 15%; left: 10%;"></div>
+                    <div class="animation-dot" style="top: 25%; right: 15%; animation-delay: 0.5s;"></div>
+                    <div class="animation-dot" style="bottom: 20%; left: 15%; animation-delay: 1s;"></div>
+                    <div class="animation-dot" style="bottom: 30%; right: 10%; animation-delay: 1.5s;"></div>
+                    
+                    <div id="call-name-display" class="name-display placeholder">
+                        准备点名
+                    </div>
+                    <div id="call-message" class="message"></div>
+                </div>
+                
+                <div class="call-controls">
+                    <button id="call-btn" class="btn btn-call">
+                        <i class="fas fa-play"></i>
+                        开始随机点名
+                    </button>
+                    <button id="call-reset-btn" class="btn btn-reset">
+                        <i class="fas fa-redo"></i>
+                        重置点名记录
+                    </button>
+                </div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-title">
+                    <i class="fas fa-history"></i>
+                    点名历史记录
+                </div>
+                <div class="history-list" id="call-history">
+                    <!-- 点名历史动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 英译汉功能 -->
+        <div id="en-to-cn-tab" class="tab-content">
+            <div class="vocab-section">
+                <div class="vocab-display-area en-to-cn-area">
+                    <!-- 动画装饰点 -->
+                    <div class="animation-dot" style="top: 15%; left: 10%; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    <div class="animation-dot" style="top: 25%; right: 15%; animation-delay: 0.5s; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    <div class="animation-dot" style="bottom: 20%; left: 15%; animation-delay: 1s; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    
+                    <!-- 移除了文字内容，只保留容器结构 -->
+                    <div class="mode-indicator">
+                        <span class="mode-text"></span>
+                    </div>
+                    
+                    <div id="en-display" class="vocab-display">
+                        准备抽查
+                    </div>
+                    <div id="cn-answer-display" class="answer-display answer-hidden">
+                        点击显示答案
+                    </div>
+                    <div id="en-to-cn-message" class="message"></div>
+                    <div id="en-to-cn-progress" class="progress-info">
+                        <div id="en-to-cn-progress-text">请选择一个Day开始抽查</div>
+                        <div class="progress-bar">
+                            <div id="en-to-cn-progress-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vocab-controls">
+                    <div class="vocab-btn-container">
+                        <button id="en-to-cn-btn" class="btn btn-vocab btn-en-to-cn">
+                            <i class="fas fa-dice"></i>
+                            随机抽查一个英译汉词汇
+                        </button>
+                        <button id="show-cn-answer-btn" class="btn btn-show-answer">
+                            <i class="fas fa-eye"></i>
+                            显示答案
+                        </button>
+                        <button id="reset-en-to-cn-btn" class="btn btn-reset-unit">
+                            <i class="fas fa-redo"></i>
+                            重置当前Day抽查记录
+                        </button>
+                    </div>
+                    
+                    <div class="unit-buttons" id="en-to-cn-unit-buttons">
+                        <!-- 英译汉单元按钮将动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-title">
+                    <i class="fas fa-history"></i>
+                    英译汉抽查记录
+                </div>
+                <div class="history-list" id="en-to-cn-history">
+                    <!-- 英译汉抽查历史动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 汉译英功能 -->
+        <div id="cn-to-en-tab" class="tab-content">
+            <div class="vocab-section">
+                <div class="vocab-display-area cn-to-en-area">
+                    <!-- 动画装饰点 -->
+                    <div class="animation-dot" style="top: 15%; left: 10%; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    <div class="animation-dot" style="top: 25%; right: 15%; animation-delay: 0.5s; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    <div class="animation-dot" style="bottom: 20%; left: 15%; animation-delay: 1s; background-color: rgba(255, 255, 255, 0.5);"></div>
+                    
+                    <!-- 移除了文字内容，只保留容器结构 -->
+                    <div class="mode-indicator">
+                        <span class="mode-text"></span>
+                    </div>
+                    
+                    <div id="cn-display" class="vocab-display">
+                        准备抽查
+                    </div>
+                    <div id="en-answer-display" class="answer-display answer-hidden">
+                        点击显示答案
+                    </div>
+                    <div id="cn-to-en-message" class="message"></div>
+                    <div id="cn-to-en-progress" class="progress-info">
+                        <div id="cn-to-en-progress-text">请选择一个Day开始抽查</div>
+                        <div class="progress-bar">
+                            <div id="cn-to-en-progress-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vocab-controls">
+                    <div class="vocab-btn-container">
+                        <button id="cn-to-en-btn" class="btn btn-vocab btn-cn-to-en">
+                            <i class="fas fa-dice"></i>
+                            随机抽查一个汉译英词汇
+                        </button>
+                        <button id="show-en-answer-btn" class="btn btn-show-answer">
+                            <i class="fas fa-eye"></i>
+                            显示答案
+                        </button>
+                        <button id="reset-cn-to-en-btn" class="btn btn-reset-unit">
+                            <i class="fas fa-redo"></i>
+                            重置当前Day抽查记录
+                        </button>
+                    </div>
+                    
+                    <div class="unit-buttons" id="cn-to-en-unit-buttons">
+                        <!-- 汉译英单元按钮将动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-title">
+                    <i class="fas fa-history"></i>
+                    汉译英抽查记录
+                </div>
+                <div class="history-list" id="cn-to-en-history">
+                    <!-- 汉译英抽查历史动态添加 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h4><i class="fas fa-info-circle"></i> 使用说明 </h4>
+            <ul>
+                <li><strong>随机点名功能：</strong>点击"开始随机点名"按钮进行随机选择，已点名的学生会被记录在历史中</li>
+                <li><strong>英译汉功能：</strong>选择Day后，系统会确保每个词汇在全部抽查完前不会重复显示</li>
+                <li><strong>汉译英功能：</strong>选择Day后，系统会确保每个词汇在全部抽查完前不会重复显示</li>
+                <li><strong>去重逻辑：</strong>每个Day的所有词汇都会被抽查一遍后才可能重复</li>
+                <li><strong>进度显示：</strong>上方显示框显示当前Day的抽查进度（进度条和百分比）</li>
+                <li><strong>重置功能：</strong>可以重置点名记录或单个Day的抽查记录</li>
+                <li><strong>加宽显示：</strong>显示框已加宽，可以完整显示一行词汇</li>
+                <li><strong>布局优化：</strong>Day按钮按每行10个显示，更符合29个Day的布局</li>
+                <li><strong>高度调整：</strong>动态显示框高度增加20%，上方空间减少15%，以显示完整的进度条</li>
+                <li><strong>界面优化：</strong>移除了显示框顶部的模式文字，提供更简洁的显示界面</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 主应用代码 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // 数据存储
+            let students = [
+                "陈雅婷","陈钇桥","陈倚淇","高增颖","古梓灏","关炜杰","郭梓灵","何静雯","何银慧","黄宝怡",
+                "黄根浩","黄劲","黄俊富","黄龙华","黄秋灵","黄锡凯","黄梓峰","柯凤仙","寇海睿","黎子萍",
+                "梁万烨","梁雯茵","梁心怡","梁栩","梁予焓","梁远飞","凌智","刘万喜","卢建佟","罗舒婷",
+                "苏炜棋","苏泳森","温龙熙","吴海茵","吴美怡","吴栩辉","谢柳霞","叶莹荧","张焕婷","钟朋达",
+                "钟文龙","朱梓莹","郭佳烨","叶明洋"
+            ];
+            
+            // DOM元素
+            const callNameDisplay = document.getElementById('call-name-display');
+            const callMessage = document.getElementById('call-message');
+            const callBtn = document.getElementById('call-btn');
+            const callResetBtn = document.getElementById('call-reset-btn');
+            const callHistoryList = document.getElementById('call-history');
+            
+            const enDisplay = document.getElementById('en-display');
+            const cnAnswerDisplay = document.getElementById('cn-answer-display');
+            const enToCnMessage = document.getElementById('en-to-cn-message');
+            const enToCnProgress = document.getElementById('en-to-cn-progress');
+            const enToCnProgressText = document.getElementById('en-to-cn-progress-text');
+            const enToCnProgressFill = document.getElementById('en-to-cn-progress-fill');
+            const enToCnBtn = document.getElementById('en-to-cn-btn');
+            const showCnAnswerBtn = document.getElementById('show-cn-answer-btn');
+            const resetEnToCnBtn = document.getElementById('reset-en-to-cn-btn');
+            const enToCnHistoryList = document.getElementById('en-to-cn-history');
+            const enToCnUnitButtonsContainer = document.getElementById('en-to-cn-unit-buttons');
+            
+            const cnDisplay = document.getElementById('cn-display');
+            const enAnswerDisplay = document.getElementById('en-answer-display');
+            const cnToEnMessage = document.getElementById('cn-to-en-message');
+            const cnToEnProgress = document.getElementById('cn-to-en-progress');
+            const cnToEnProgressText = document.getElementById('cn-to-en-progress-text');
+            const cnToEnProgressFill = document.getElementById('cn-to-en-progress-fill');
+            const cnToEnBtn = document.getElementById('cn-to-en-btn');
+            const showEnAnswerBtn = document.getElementById('show-en-answer-btn');
+            const resetCnToEnBtn = document.getElementById('reset-cn-to-en-btn');
+            const cnToEnHistoryList = document.getElementById('cn-to-en-history');
+            const cnToEnUnitButtonsContainer = document.getElementById('cn-to-en-unit-buttons');
+            
+            // 状态变量
+            let isCalling = false;
+            let callInterval;
+            let currentEnToCnUnit = "Day 1";
+            let currentCnToEnUnit = "Day 1";
+            let currentEnToCnIndex = -1;
+            let currentCnToEnIndex = -1;
+            
+            // 词汇数据
+            const enToCnVocab = {
+                "Day 1": [
+                    {en: "an hour", cn: "一小时"},
+                    {en: "a useful tool", cn: "一个有用的工具"},
+                    {en: "have the ability to do sth.", cn: "有能力做某事"},
+                    {en: "be able to do sth.", cn: "能够做某事"},
+                    {en: "talk about", cn: "谈论"},
+                    {en: "think about", cn: "考虑"},
+                    {en: "be about to do sth.", cn: "即将做某事"},
+                    {en: "above all", cn: "首先；最重要的是"},
+                    {en: "go abroad", cn: "出国"},
+                    {en: "study abroad", cn: "出国留学"},
+                    {en: "from home and abroad", cn: "来自国内外"},
+                    {en: "be absent from", cn: "缺席…"},
+                    {en: "by accident", cn: "偶然；意外地"},
+                    {en: "according to", cn: "根据…"},
+                    {en: "take...into account", cn: "考虑到…"},
+                    {en: "on account of", cn: "由于；因为"},
+                    {en: "have a headache", cn: "头疼"},
+                    {en: "achieve one's dream", cn: "实现某人的梦想"},
+                    {en: "across from", cn: "在…对面"},
+                    {en: "act as", cn: "担任；充当"},
+                    {en: "act out", cn: "把…表演出来；将…付诸行动"},
+                    {en: "take action to do sth.", cn: "采取行动做某事"},
+                    {en: "put...into action", cn: "将…付诸行动"},
+                    {en: "be active in", cn: "在…方面积极"},
+                    {en: "take/play an active part in", cn: "积极参加"},
+                    {en: "after-school activities", cn: "课外活动"},
+                    {en: "outdoor activities", cn: "户外活动"},
+                    {en: "put an ad", cn: "登广告"},
+                    {en: "add...to...", cn: "把…加到…上"},
+                    {en: "add up", cn: "把…加起来"},
+                    {en: "add up to", cn: "总计达"},
+                    {en: "address oneself to", cn: "致力于；着手做"},
+                    {en: "admire sb. for sth.", cn: "因某事钦佩某人"},
+                    {en: "an adult", cn: "一个成年人"},
+                    {en: "take advantage of", cn: "利用"},
+                    {en: "have an advantage over", cn: "比…有优势"},
+                    {en: "give advice on/about sth.", cn: "就...提出建议"},
+                    {en: "take one's advice", cn: "接受某人的建议"},
+                    {en: "advise doing sth.", cn: "建议做某事"},
+                    {en: "advise sb. to do sth.", cn: "建议某人做某事"},
+                    {en: "afford to do sth.", cn: "负担得起做某事"},
+                    {en: "be afraid of", cn: "害怕…"},
+                    {en: "I'm afraid...", cn: "恐怕…"},
+                    {en: "be afraid to do sth.", cn: "不敢做某事"},
+                    {en: "after all", cn: "毕竟"},
+                    {en: "look after", cn: "照顾"},
+                    {en: "after class", cn: "课后"},
+                    {en: "in the afternoon", cn: "在下午"},
+                    {en: "again and again", cn: "再三地；反复地"},
+                    {en: "once again", cn: "再一次"},
+                    {en: "be against", cn: "反对"},
+                    {en: "at the age of", cn: "在…岁时"},
+                    {en: "of an age", cn: "同龄"},
+                    {en: "three days ago", cn: "三天前"},
+                    {en: "long ago", cn: "很久以前"},
+                    {en: "agree with sb.", cn: "同意某人的观点"},
+                    {en: "agree to do sth.", cn: "同意做某事"},
+                    {en: "agree on", cn: "就…达成一致"},
+                    {en: "ahead of", cn: "在…前面；超过"},
+                    {en: "go ahead", cn: "前进；进行；请便"},
+                    {en: "aim at", cn: "瞄准；旨在；针对"},
+                    {en: "with the aim of", cn: "以…为目的"},
+                    {en: "first aid", cn: "急救"},
+                    {en: "give aid to", cn: "给予…援助"},
+                    {en: "in the air", cn: "在空中；流传中"},
+                    {en: "by air", cn: "乘飞机"},
+                    {en: "on the air", cn: "在广播"},
+                    {en: "at the airport", cn: "在机场"},
+                    {en: "alarm clock", cn: "闹钟"},
+                    {en: "set the alarm", cn: "设置闹钟"},
+                    {en: "come alive", cn: "活跃起来；苏醒过来"},
+                    {en: "all in all", cn: "总而言之"},
+                    {en: "not at all", cn: "一点也不"},
+                    {en: "all the time", cn: "一直；始终"},
+                    {en: "allow doing sth.", cn: "允许做某事"},
+                    {en: "allow sb. to do sth.", cn: "允许某人做某事"},
+                    {en: "be allowed to do sth.", cn: "被允许做某事"},
+                    {en: "almost never", cn: "几乎从不"},
+                    {en: "leave sb. alone", cn: "不打扰某人"},
+                    {en: "live alone", cn: "独居，一个人独自生活"},
+                    {en: "along with", cn: "与…一起；连同"},
+                    {en: "get along", cn: "相处；进展"},
+                    {en: "read aloud", cn: "大声朗读"},
+                    {en: "think aloud", cn: "自言自语"},
+                    {en: "be angry with sb.", cn: "生某人的气"},
+                    {en: "be angry at/about sth.", cn: "因某事生气"},
+                    {en: "one another", cn: "互相"}
+                ],
+                "Day 2": [
+                    {en: "answer the phone", cn: "接电话"},
+                    {en: "the answer to the question", cn: "问题的答案"},
+                    {en: "an ant", cn: "一只蚂蚁"},
+                    {en: "an apartment", cn: "一套公寓"},
+                    {en: "appear to be", cn: "似乎是"},
+                    {en: "have/with an area of", cn: "有...面积"},
+                    {en: "argue with", cn: "和…争论"},
+                    {en: "arm in arm", cn: "臂挽臂"},
+                    {en: "join the army", cn: "当兵，参军"},
+                    {en: "look around", cn: "环顾四周"},
+                    {en: "arrive at", cn: "到达（小地方）"},
+                    {en: "arrive in", cn: "到达（大地方）"},
+                    {en: "as…as", cn: "和…一样"},
+                    {en: "not as...as", cn: "不如"},
+                    {en: "as if", cn: "好像"},
+                    {en: "as for", cn: "至于"},
+                    {en: "ask sb. for sth.", cn: "向某人要某物"},
+                    {en: "ask sb. to do sth.", cn: "让某人做某事"},
+                    {en: "fall asleep", cn: "入睡"},
+                    {en: "at home", cn: "在家"},
+                    {en: "at school", cn: "在学校"},
+                    {en: "an athlete", cn: "一位运动员"},
+                    {en: "attend school", cn: "上学"},
+                    {en: "attend a meeting", cn: "参加会议"},
+                    {en: "pay attention to (doing) sth.", cn: "注意(做)某事"},
+                    {en: "in autumn", cn: "在秋天"},
+                    {en: "on average", cn: "平均"},
+                    {en: "avoid doing sth.", cn: "避免做某事"},
+                    {en: "be awake", cn: "醒着"},
+                    {en: "award sb. sth.", cn: "授予某人某物"},
+                    {en: "be aware of", cn: "意识到"},
+                    {en: "go away", cn: "走开"},
+                    {en: "back and forth", cn: "来回地"},
+                    {en: "be bad for", cn: "对…有害"},
+                    {en: "play badminton", cn: "打羽毛球"},
+                    {en: "a bag of", cn: "一袋…"},
+                    {en: "keep balance", cn: "保持平衡"},
+                    {en: "set up a band", cn: "建立一支乐队"},
+                    {en: "in the bank", cn: "在银行"},
+                    {en: "river bank", cn: "河岸"},
+                    {en: "play baseball", cn: "打棒球"},
+                    {en: "basic knowledge", cn: "基础知识"},
+                    {en: "a basket of", cn: "一篮…"}
+                ],
+                "Day 3": [
+                    {en: "play basketball", cn: "打篮球"},
+                    {en: "baseball bat", cn: "棒球棒"},
+                    {en: "take a bath", cn: "洗澡"},
+                    {en: "be good at", cn: "擅长"},
+                    {en: "be from", cn: "来自"},
+                    {en: "on the beach", cn: "在海滩上"},
+                    {en: "coffee bean", cn: "咖啡豆"},
+                    {en: "polar bear", cn: "北极熊"},
+                    {en: "beat sb.", cn: "打败某人"},
+                    {en: "so beautiful", cn: "如此美丽"},
+                    {en: "because of", cn: "因为(后面跟名词或代词)"},
+                    {en: "become of", cn: "发生于；变成"},
+                    {en: "go to bed", cn: "上床睡觉"},
+                    {en: "make the bed", cn: "整理床铺"},
+                    {en: "as busy as a bee", cn: "像蜜蜂一样忙碌"},
+                    {en: "before long", cn: "不久以后"},
+                    {en: "begin with", cn: "以…开始"},
+                    {en: "begin doing /to do sth.", cn: "开始做某事"},
+                    {en: "behave oneself", cn: "举止得体"},
+                    {en: "fall behind", cn: "落后"},
+                    {en: "believe in", cn: "信任"},
+                    {en: "door - bell", cn: "门铃"},
+                    {en: "belong to", cn: "属于"},
+                    {en: "below zero", cn: "零度以下"},
+                    {en: "safety belt", cn: "安全带"},
+                    {en: "benefit from", cn: "从…中受益"},
+                    {en: "at best", cn: "充其量；至多"},
+                    {en: "had better do sth.", cn: "最好做某事"},
+                    {en: "had better not do sth.", cn: "最好不做某事"},
+                    {en: "between…and…", cn: "在…和…之间"},
+                    {en: "a big deal", cn: "重要的事"},
+                    {en: "ride a bike/by bike", cn: "骑自行车"},
+                    {en: "pay the bill", cn: "买单，付款"},
+                    {en: "at birth", cn: "出生时"},
+                    {en: "hold a birthday party", cn: "举办生日派对"},
+                    {en: "a bit", cn: "一点儿"},
+                    {en: "blow out", cn: "吹灭"},
+                    {en: "on board", cn: "在船上；在飞机上"},
+                    {en: "by boat", cn: "乘船"},
+                    {en: "book a ticket", cn: "预订票"},
+                    {en: "be born", cn: "出生"}
+                ],
+                "Day 4": [
+                    {en: "borrow sth. from sb.", cn: "向某人借某物"},
+                    {en: "both…and…", cn: "两者都"},
+                    {en: "a bottle of", cn: "一瓶…"},
+                    {en: "at the bottom of", cn: "在…底部"},
+                    {en: "a bowl of", cn: "一碗…"},
+                    {en: "a box of", cn: "一盒…"},
+                    {en: "break down", cn: "出故障；分解"},
+                    {en: "break up", cn: "解散；破碎"},
+                    {en: "break out", cn: "爆发"},
+                    {en: "take a break", cn: "休息一下"},
+                    {en: "have breakfast", cn: "吃早餐"},
+                    {en: "take a breath", cn: "吸口气"},
+                    {en: "out of breath", cn: "上气不接下气"},
+                    {en: "bring sb. sth.(bring sth. to sb.)", cn: "给某人带来某物"},
+                    {en: "tooth - brush", cn: "牙刷"},
+                    {en: "teaching building", cn: "教学楼"},
+                    {en: "by bus", cn: "乘公共汽车"},
+                    {en: "take a bus", cn: "乘公共汽车"},
+                    {en: "on business", cn: "出差"},
+                    {en: "be busy with sth.", cn: "忙于某事"},
+                    {en: "be busy doing sth.", cn: "忙于做某事"},
+                    {en: "buy sb. sth.(buy sth. for sb.)", cn: "给某人买某物"},
+                    {en: "by the way", cn: "顺便说一下"},
+                    {en: "a piece of cake", cn: "小菜一碟"},
+                    {en: "call sb.", cn: "给某人打电话"},
+                    {en: "call on", cn: "拜访（某人）"},
+                    {en: "keep calm", cn: "保持镇静"},
+                    {en: "calm down", cn: "冷静下来"},
+                    {en: "digital camera", cn: "数码相机"},
+                    {en: "go camping", cn: "去露营"},
+                    {en: "summer camp", cn: "夏令营"},
+                    {en: "the capital of China", cn: "中国首都"},
+                    {en: "by car/take a car", cn: "乘小汽车"},
+                    {en: "ID card", cn: "身份证"},
+                    {en: "credit card", cn: "信用卡"},
+                    {en: "care about", cn: "关心；在意"},
+                    {en: "take care of", cn: "照顾"},
+                    {en: "be careful with sth.", cn: "小心某事"},
+                    {en: "carry on", cn: "继续；坚持"},
+                    {en: "carry out", cn: "执行，实施"}
+                ],
+                "Day 5": [
+                    {en: "in case of", cn: "假如；如果发生"},
+                    {en: "in this case", cn: "在这种情况下"},
+                    {en: "catch up with", cn: "赶上"},
+                    {en: "catch a cold", cn: "感冒"},
+                    {en: "be certain about", cn: "对…确定"},
+                    {en: "for certain", cn: "肯定地"},
+                    {en: "by chance", cn: "偶然；意外地"},
+                    {en: "take a chance", cn: "冒险一试"},
+                    {en: "change into", cn: "变成"},
+                    {en: "change one's mind", cn: "改变主意"},
+                    {en: "chat with", cn: "和…聊天"},
+                    {en: "check in", cn: "登记入住"},
+                    {en: "check out", cn: "结账离开"},
+                    {en: "cheer up", cn: "使高兴起来；振作起来"},
+                    {en: "cheer for", cn: "为...欢呼"},
+                    {en: "play chess", cn: "下国际象棋"},
+                    {en: "make a choice", cn: "做出选择"},
+                    {en: "choose from", cn: "从…中选择"},
+                    {en: "do chores", cn: "做家务"},
+                    {en: "at Christmas", cn: "在圣诞节期间"},
+                    {en: "on Christmas Eve", cn: "在平安夜"},
+                    {en: "go to the cinema", cn: "去看电影"},
+                    {en: "in class", cn: "在课堂上"},
+                    {en: "after class", cn: "课后"},
+                    {en: "clean up", cn: "打扫干净"},
+                    {en: "clear up", cn: "整理；（天气）放晴"},
+                    {en: "climb up", cn: "爬上"},
+                    {en: "close to", cn: "靠近；接近"}
+                ],
+                "Day 6": [
+                    {en: "on the coast", cn: "在海岸"},
+                    {en: "catch a cold", cn: "感冒"},
+                    {en: "have a cold", cn: "患感冒"},
+                    {en: "come from", cn: "来自"},
+                    {en: "come back", cn: "回来"},
+                    {en: "in common", cn: "共同的；共有的"},
+                    {en: "communicate with", cn: "与…交流"},
+                    {en: "compare…with/to…", cn: "把… 与… 比较"},
+                    {en: "compete with", cn: "与…竞争"},
+                    {en: "complete doing sth.", cn: "做完某事"},
+                    {en: "a computer game", cn: "电脑游戏"},
+                    {en: "at the concert", cn: "在音乐会上"},
+                    {en: "congratulations on", cn: "对…表示祝贺"},
+                    {en: "connect…with…", cn: "把…和…连接起来；把…与…联系起来"},
+                    {en: "consider doing sth.", cn: "考虑做某事"},
+                    {en: "consider as", cn: "把...看作"},
+                    {en: "continue doing/to do sth.", cn: "继续做某事"},
+                    {en: "in control of", cn: "掌管；管理"},
+                    {en: "out of control", cn: "失去控制"},
+                    {en: "under control", cn: "处于控制之下"},
+                    {en: "be convenient to do sth.", cn: "方便做某事"},
+                    {en: "have a conversation with", cn: "与…交谈"},
+                    {en: "cooperate with", cn: "与…合作"},
+                    {en: "in the corner of", cn: "在…的角落里"},
+                    {en: "around the corner", cn: "即将到来"},
+                    {en: "count down", cn: "倒数"},
+                    {en: "a couple of", cn: "几个；一对"},
+                    {en: "of course", cn: "当然"},
+                    {en: "be covered with", cn: "被…覆盖"},
+                    {en: "be crazy about", cn: "对…着迷"}
+                ],
+                "Day 7": [
+                    {en: "a cup of", cn: "一杯…"},
+                    {en: "be curious about", cn: "对…感到好奇"},
+                    {en: "cut down", cn: "砍倒；削减"},
+                    {en: "cut off", cn: "切断；中断"},
+                    {en: "China Daily", cn: "中国日报"},
+                    {en: "in danger", cn: "处于危险中"},
+                    {en: "out of danger", cn: "脱离危险"},
+                    {en: "out of date", cn: "过时的"},
+                    {en: "up to date", cn: "最新的"},
+                    {en: "day by day", cn: "一天天地"},
+                    {en: "one day", cn: "有一天"},
+                    {en: "deal with", cn: "处理；对付"},
+                    {en: "decide to do sth.", cn: "决定做某事"},
+                    {en: "depend on", cn: "依靠；取决于"},
+                    {en: "die for", cn: "为...而死"},
+                    {en: "die of", cn: "死于(饥饿、疾病、情感等内因)"},
+                    {en: "die from", cn: "死于（事故、环境、伤害等外因）"},
+                    {en: "be different from", cn: "与…… 不同"},
+                    {en: "dig out", cn: "挖出；发现"},
+                    {en: "dining room", cn: "餐厅"},
+                    {en: "have dinner", cn: "吃晚餐"},
+                    {en: "natural disaster", cn: "自然灾害"}
+                ],
+                "Day 8": [
+                    {en: "divide…into…", cn: "把…分成…"},
+                    {en: "do one's homework", cn: "做作业"},
+                    {en: "do some shopping", cn: "购物"},
+                    {en: "see a doctor", cn: "看医生"},
+                    {en: "donate…to…", cn: "把…捐赠给…"},
+                    {en: "without doubt", cn: "毫无疑问"},
+                    {en: "There is no doubt that ...", cn: "毫无疑问"},
+                    {en: "go down", cn: "下降；沿着…走"},
+                    {en: "down with", cn: "打倒；把…拿下"},
+                    {en: "draw a picture", cn: "画画"},
+                    {en: "draw one's attention", cn: "吸引某人的注意"},
+                    {en: "dream of/about (doing sth.)", cn: "梦想(做某事)；梦见"},
+                    {en: "dress up", cn: "打扮；穿上盛装"},
+                    {en: "drink up", cn: "喝光"},
+                    {en: "drive sb. crazy", cn: "使某人发疯"},
+                    {en: "drive off", cn: "赶走"},
+                    {en: "a taxi driver", cn: "出租车司机"},
+                    {en: "drop by", cn: "顺便拜访"},
+                    {en: "drop off", cn: "放下；下车"},
+                    {en: "on duty", cn: "值班；值日"},
+                    {en: "each other", cn: "互相"},
+                    {en: "on earth", cn: "究竟；到底"},
+                    {en: "in the east", cn: "在东方"},
+                    {en: "take it easy", cn: "别紧张；别着急"},
+                    {en: "eat up", cn: "吃光"},
+                    {en: "have an effect on", cn: "对...有影响"},
+                    {en: "make an effort to do sth.", cn: "努力做某事"},
+                    {en: "either…or…", cn: "或者…或者…；要么…要么…"},
+                    {en: "an elephant", cn: "一只大象"},
+                    {en: "an email", cn: "一封电子邮件"},
+                    {en: "encourage sb. to do sth.", cn: "鼓励某人做某事"},
+                    {en: "in the end", cn: "最后；终于"},
+                    {en: "at the end of", cn: "在…尽头；在…结束时"}
+                ],
+                "Day 9": [
+                    {en: "in English", cn: "用英语"},
+                    {en: "enjoy doing sth.", cn: "喜欢做某事"},
+                    {en: "enjoy oneself", cn: "享受"},
+                    {en: "protect the environment", cn: "保护环境"},
+                    {en: "even if/though", cn: "即使；尽管"},
+                    {en: "in the evening", cn: "在晚上"},
+                    {en: "ever since", cn: "自从"},
+                    {en: "for ever", cn: "永远"},
+                    {en: "everyday English", cn: "日常英语"},
+                    {en: "take an exam", cn: "参加考试"},
+                    {en: "for example", cn: "例如"},
+                    {en: "set an example for sb.", cn: "给某人树立榜样"},
+                    {en: "be excited about", cn: "对…感到兴奋"},
+                    {en: "exciting news", cn: "令人兴奋的消息"},
+                    {en: "excuse me", cn: "劳驾；请原谅"},
+                    {en: "take exercise", cn: "进行锻炼"},
+                    {en: "morning exercises", cn: "早操"},
+                    {en: "expect to do sth.", cn: "期望做某事"},
+                    {en: "an expert", cn: "一位专家"},
+                    {en: "explain sth. to sb.", cn: "向某人解释某事"},
+                    {en: "keep an eye on", cn: "监视"},
+                    {en: "face to face", cn: "面对面"},
+                    {en: "make faces", cn: "做鬼脸"},
+                    {en: "in fact", cn: "事实上；实际上"},
+                    {en: "fail to do sth.", cn: "未能做某事"},
+                    {en: "fair play", cn: "公平竞争"},
+                    {en: "fall down", cn: "摔倒；倒塌"},
+                    {en: "fall asleep", cn: "入睡"},
+                    {en: "fall in love with", cn: "爱上"},
+                    {en: "be familiar with", cn: "熟悉"},
+                    {en: "family tree", cn: "家谱"},
+                    {en: "be famous for", cn: "因… 而著名(著名的原因)"},
+                    {en: "be famous as", cn: "作为…而著名(著名的身份)"},
+                    {en: "far from", cn: "远离"},
+                    {en: "as far as", cn: "就…而言"},
+                    {en: "on the farm", cn: "在农场"},
+                    {en: "out of fashion", cn: "过时的"}
+                ],
+                "Day 10": [
+                    {en: "feed on", cn: "以…为食"},
+                    {en: "feel like (doing sth.)", cn: "想要(做某事)；感觉像…"},
+                    {en: "the Spring Festival", cn: "春节"},
+                    {en: "have a fever", cn: "发烧"},
+                    {en: "a few", cn: "一些；几个(后跟名词复数形式)"},
+                    {en: "few", cn: "很少，不多，几乎没有"},
+                    {en: "fight for", cn: "为… 而战"},
+                    {en: "fight against", cn: "与…作斗争"},
+                    {en: "fill…with…", cn: "用… 装满"},
+                    {en: "be filled with", cn: "充满"},
+                    {en: "see a film", cn: "看电影"},
+                    {en: "find out", cn: "查明；弄清"},
+                    {en: "finish doing sth.", cn: "完成做某事"},
+                    {en: "on fire", cn: "着火"},
+                    {en: "set fire to", cn: "点燃"},
+                    {en: "make fire", cn: "生火"},
+                    {en: "firemen", cn: "消防员复数形式"},
+                    {en: "set off fireworks", cn: "放烟花"},
+                    {en: "go fishing", cn: "去钓鱼"},
+                    {en: "be fit for", cn: "适合"},
+                    {en: "keep fit", cn: "保持健康，锻炼"},
+                    {en: "fix up", cn: "修理；装饰"},
+                    {en: "national flag", cn: "国旗"},
+                    {en: "on the second floor", cn: "在二楼"},
+                    {en: "fly kites", cn: "放风筝"},
+                    {en: "focus on", cn: "集中于"},
+                    {en: "follow sb.", cn: "跟随某人"},
+                    {en: "follow one's advice", cn: "听从某人的建议"},
+                    {en: "junk food", cn: "垃圾食品"},
+                    {en: "on foot", cn: "步行"},
+                    {en: "play football", cn: "踢足球"},
+                    {en: "forget to do sth.", cn: "忘记去做某事"},
+                    {en: "forget doing sth.", cn: "忘记做过某事"},
+                    {en: "look forward to doing sth.", cn: "期待做某事"},
+                    {en: "for free", cn: "免费"},
+                    {en: "make friends with", cn: "与…交朋友"},
+                    {en: "be friends with", cn: "与…交朋友"},
+                    {en: "be friendly to", cn: "对…友好"}
+                ],
+                "Day 11": [
+                    {en: "from...to...", cn: "从…到…"},
+                    {en: "be from", cn: "来自"},
+                    {en: "in front of", cn: "在…前面（外部）"},
+                    {en: "in the front of", cn: "在…前面（内部）"},
+                    {en: "be full of(be filled with)", cn: "充满"},
+                    {en: "have fun (doing sth.)", cn: "玩得开心"},
+                    {en: "in the future", cn: "在将来"},
+                    {en: "play games", cn: "玩游戏"},
+                    {en: "in general", cn: "通常；大体上"},
+                    {en: "get up", cn: "起床"},
+                    {en: "get on", cn: "上车；进展"},
+                    {en: "get off", cn: "下车"},
+                    {en: "give up", cn: "放弃"},
+                    {en: "give away", cn: "赠送"},
+                    {en: "give in", cn: "屈服"},
+                    {en: "be glad to do sth.", cn: "很高兴做某事"},
+                    {en: "a glass of", cn: "一杯…"},
+                    {en: "go on", cn: "继续"},
+                    {en: "go out", cn: "出去"},
+                    {en: "go shopping", cn: "去购物"},
+                    {en: "win a gold medal", cn: "赢得一枚金牌"},
+                    {en: "be good at", cn: "擅长"},
+                    {en: "be good for", cn: "对…有好处"},
+                    {en: "say goodbye to sb.", cn: "与某人说再见"},
+                    {en: "in Grade Nine", cn: "在九年级"},
+                    {en: "graduate from", cn: "毕业于"},
+                    {en: "a group of", cn: "一群；一组"},
+                    {en: "grow up", cn: "长大；成长"},
+                    {en: "play the guitar", cn: "弹吉他"}
+                ],
+                "Day 12": [
+                    {en: "get into the habit of", cn: "形成...的习惯"},
+                    {en: "in half", cn: "分成两半"},
+                    {en: "half an hour", cn: "半小时"},
+                    {en: "hand in", cn: "上交"},
+                    {en: "hand out", cn: "分发"},
+                    {en: "by hand", cn: "用手"},
+                    {en: "hang out", cn: "闲逛"},
+                    {en: "hang up", cn: "挂断电话；悬挂"},
+                    {en: "happen to", cn: "碰巧；恰好"},
+                    {en: "be happy to do sth.", cn: "开心做某事"},
+                    {en: "work hard", cn: "努力工作/学习"},
+                    {en: "be hard on", cn: "对…苛刻"},
+                    {en: "do harm to(be harmful to)", cn: "对…有害"},
+                    {en: "hate doing/to do sth.", cn: "讨厌做某事"},
+                    {en: "have a look (at)", cn: "看一看"},
+                    {en: "have a rest", cn: "休息一下"},
+                    {en: "keep healthy", cn: "保持健康"},
+                    {en: "hear from", cn: "收到… 的来信"},
+                    {en: "hear of", cn: "听说"},
+                    {en: "help sb. (to) do sth.", cn: "帮助某人做某事"},
+                    {en: "help sb. with sth.", cn: "帮助某人做某事"},
+                    {en: "with the help of sb.(with one's help)", cn: "在某人的帮助下"},
+                    {en: "be helpful to", cn: "对…有帮助"},
+                    {en: "Here you are.", cn: "给你。"},
+                    {en: "hide from", cn: "躲避；隐瞒"},
+                    {en: "have/with a history of", cn: "有...历史"},
+                    {en: "hold on", cn: "等一等；别挂断"},
+                    {en: "hold a meeting", cn: "举行会议"},
+                    {en: "on holiday", cn: "在度假"},
+                    {en: "go for a holiday", cn: "去度假"},
+                    {en: "at home", cn: "在家"},
+                    {en: "go home", cn: "回家"},
+                    {en: "do one's homework", cn: "做家庭作业"},
+                    {en: "to be honest", cn: "说实话"},
+                    {en: "an honest boy", cn: "一个诚实的男孩"},
+                    {en: "in honour of", cn: "为纪念..."},
+                    {en: "hope to do sth.", cn: "希望做某事"}
+                ],
+                "Day 13": [
+                    {en: "in hospital", cn: "住院"},
+                    {en: "in the hospital", cn: "在医院"},
+                    {en: "an hour", cn: "一小时"},
+                    {en: "how about …", cn: "怎么样"},
+                    {en: "how far", cn: "多远"},
+                    {en: "how soon...", cn: "多久才(一般将来时)"},
+                    {en: "how often...", cn: "多久一次(问频率)"},
+                    {en: "how long", cn: "多长时间；多长"},
+                    {en: "hunt for", cn: "寻找"},
+                    {en: "hurry up", cn: "快点"},
+                    {en: "in a hurry", cn: "匆忙地"},
+                    {en: "have no idea", cn: "不知道"},
+                    {en: "imagine doing sth.", cn: "想象做某事"},
+                    {en: "be important for/to", cn: "对...重要"},
+                    {en: "in front of", cn: "在…前面"},
+                    {en: "in the end", cn: "最后"},
+                    {en: "in a hurry", cn: "匆忙地"},
+                    {en: "increase to", cn: "增加到"},
+                    {en: "increase by", cn: "增加了"},
+                    {en: "have an influence on", cn: "对...有影响"},
+                    {en: "instead of", cn: "代替；而不是"},
+                    {en: "be interested in", cn: "对…感兴趣"},
+                    {en: "on the Internet", cn: "在网上"},
+                    {en: "introduce sb. to sb.", cn: "把某人介绍给某人"},
+                    {en: "invite sb. to do sth.", cn: "邀请某人做某事"}
+                ],
+                "Day 14": [
+                    {en: "join", cn: "参加（组织/人）"},
+                    {en: "join in", cn: "参加（活动）"},
+                    {en: "join…to…", cn: "把…和…连接起来"},
+                    {en: "play a joke on", cn: "开…的玩笑"},
+                    {en: "Journey to the West", cn: "西游记"},
+                    {en: "jump up", cn: "跳起来"},
+                    {en: "high jump", cn: "跳高"},
+                    {en: "junior high school", cn: "初级中学"},
+                    {en: "just now", cn: "刚才(一般过去时时间状语)"},
+                    {en: "just as", cn: "正如"},
+                    {en: "keep doing sth.", cn: "一直做某事"},
+                    {en: "keep in touch with", cn: "与...保持联系"},
+                    {en: "the key to", cn: "…的钥匙/关键"},
+                    {en: "kick off", cn: "开球；开始"},
+                    {en: "a kind of", cn: "一种"},
+                    {en: "all kinds of", cn: "各种各样的"},
+                    {en: "be kind to", cn: "对…友善"},
+                    {en: "fly a kite", cn: "放风筝"},
+                    {en: "knock at/on", cn: "敲（门、窗等）"},
+                    {en: "know about", cn: "了解"},
+                    {en: "get to know", cn: "逐渐了解"},
+                    {en: "Knowledge is power.", cn: "知识就是力量。"},
+                    {en: "the Lanten Festival", cn: "元宵节"},
+                    {en: "at last", cn: "最后"},
+                    {en: "last for", cn: "持续"},
+                    {en: "be late for", cn: "迟到"},
+                    {en: "later on", cn: "后来"},
+                    {en: "an hour later", cn: "一小时后"},
+                    {en: "laugh at", cn: "嘲笑"},
+                    {en: "lay the table", cn: "摆桌子"},
+                    {en: "lead to", cn: "导致；通向"},
+                    {en: "lead sb. to", cn: "带领某人到…"}
+                ],
+                "Day 15": [
+                    {en: "learn from", cn: "向…学习"},
+                    {en: "learn about", cn: "了解"},
+                    {en: "at least", cn: "至少"},
+                    {en: "leave for", cn: "动身去…"},
+                    {en: "leave behind", cn: "留下；遗留"},
+                    {en: "on the left", cn: "在左边"},
+                    {en: "turn left", cn: "左转"},
+                    {en: "lend sb. sth.(lend sth. to sb.)", cn: "借给某人某物"},
+                    {en: "less than", cn: "少于"},
+                    {en: "have a lesson", cn: "上课"},
+                    {en: "learn a lesson", cn: "吸取教训"},
+                    {en: "let sb. do sth.", cn: "让某人做某事"},
+                    {en: "lie down", cn: "躺下"},
+                    {en: "tell a lie", cn: "说谎"},
+                    {en: "live a happy life", cn: "过着幸福的生活"},
+                    {en: "give sb. a lift", cn: "让某人搭便车"},
+                    {en: "turn on/off the light", cn: "打开/关闭灯"},
+                    {en: "would like to do sth.", cn: "想做某事"},
+                    {en: "What ... be like?", cn: "...怎么样？"},
+                    {en: "be likely to do sth.", cn: "可能做某事"},
+                    {en: "in line", cn: "成一排；排队"},
+                    {en: "make a list of", cn: "列...清单"},
+                    {en: "shopping list", cn: "购物单"},
+                    {en: "listen to", cn: "听"},
+                    {en: "a little", cn: "一点儿；少量"},
+                    {en: "little by little", cn: "逐渐地"},
+                    {en: "live in", cn: "住在"},
+                    {en: "live on", cn: "以…为生"},
+                    {en: "as long as", cn: "只要；和… 一样长"},
+                    {en: "long for", cn: "渴望"},
+                    {en: "look for", cn: "寻找"},
+                    {en: "look after", cn: "照顾"},
+                    {en: "look forward to doing sth.", cn: "期待做某事"},
+                    {en: "lose one's way", cn: "迷路"},
+                    {en: "lose heart", cn: "灰心"},
+                    {en: "a lot of(lots of)", cn: "许多；大量"},
+                    {en: "fall in love with", cn: "爱上…"},
+                    {en: "love for", cn: "对...的爱"},
+                    {en: "good luck", cn: "祝你好运"},
+                    {en: "have lunch", cn: "吃午饭"},
+                    {en: "be mad at", cn: "对…生气"},
+                    {en: "make a living", cn: "谋生"},
+                    {en: "make up", cn: "组成；编造"},
+                    {en: "make sb. do sth.", cn: "使某人做某事"}
+                ],
+                "Day 16": [
+                    {en: "manage to do sth.", cn: "设法做成某事"},
+                    {en: "table manner", cn: "餐桌礼仪"},
+                    {en: "a map of", cn: "一张...地图"},
+                    {en: "marry sb.", cn: "和某人结婚"},
+                    {en: "get married", cn: "结婚"},
+                    {en: "watch a match", cn: "观看比赛"},
+                    {en: "match…with…", cn: "使…与…相配"},
+                    {en: "What's the matter?", cn: "怎么了？"},
+                    {en: "no matter", cn: "无论"},
+                    {en: "mean to do sth.", cn: "打算做某事"},
+                    {en: "mean doing sth.", cn: "意味做某事"},
+                    {en: "a gold/silver/bronze medal", cn: "金/银/铜牌"},
+                    {en: "take medicine", cn: "吃药"},
+                    {en: "meet with", cn: "遇见；遭受"},
+                    {en: "at the meeting", cn: "在会议上"},
+                    {en: "a League member", cn: "一位团员"},
+                    {en: "in a mess", cn: "乱七八糟"},
+                    {en: "leave a message", cn: "留言"},
+                    {en: "take a message", cn: "捎口信"},
+                    {en: "in the middle of", cn: "在…中间"},
+                    {en: "make up one's mind to do sth.", cn: "下定决心做某事"},
+                    {en: "mind doing sth.", cn: "介意做某事"},
+                    {en: "in a minute", cn: "一会儿；立刻"},
+                    {en: "in the mirror", cn: "在镜里"},
+                    {en: "make a mistake", cn: "犯错误"},
+                    {en: "by mistake", cn: "错误地"},
+                    {en: "mix…with…", cn: "把…和…混合"},
+                    {en: "mobile phone", cn: "移动电话"},
+                    {en: "smart phone", cn: "智能手机"},
+                    {en: "at the moment", cn: "此刻；目前"},
+                    {en: "more and more", cn: "越来越多"},
+                    {en: "more or less", cn: "或多或少"},
+                    {en: "in the morning", cn: "在早上"},
+                    {en: "at most", cn: "至多"},
+                    {en: "most of", cn: "大多数"}
+                ],
+                "Day 17": [
+                    {en: "move in", cn: "迁入"},
+                    {en: "move out", cn: "迁出"},
+                    {en: "go to the movies", cn: "去看电影"},
+                    {en: "much too", cn: "太"},
+                    {en: "too much", cn: "太多"},
+                    {en: "as much as", cn: "多达"},
+                    {en: "by myself", cn: "独自地"},
+                    {en: "in the name of", cn: "以…的名义"},
+                    {en: "It's necessary for sb. to do sth.", cn: "对某人来说做某事是必要的"},
+                    {en: "in need", cn: "有需要的"},
+                    {en: "people in need", cn: "有需要的人"},
+                    {en: "neither…nor…", cn: "既不…也不…"},
+                    {en: "be nervous about", cn: "对…感到紧张"},
+                    {en: "read a newspaper", cn: "看报纸"},
+                    {en: "next to", cn: "紧挨着；仅次于"},
+                    {en: "next year", cn: "明年"},
+                    {en: "next time", cn: "下次"},
+                    {en: "next week", cn: "下周"},
+                    {en: "at night", cn: "在晚上"},
+                    {en: "good night", cn: "晚安"},
+                    {en: "make noise", cn: "制造噪音"},
+                    {en: "none of", cn: "（三个或三个以上）都不"},
+                    {en: "at noon", cn: "在中午"},
+                    {en: "neither…nor…", cn: "既不…也不…"},
+                    {en: "in the north of", cn: "在…的北部"},
+                    {en: "not at all", cn: "一点也不"},
+                    {en: "not only…but also…", cn: "不但…而且…"},
+                    {en: "take notes", cn: "做笔记"},
+                    {en: "nothing but", cn: "只有；只不过"},
+                    {en: "take notice of", cn: "注意到"},
+                    {en: "from now on", cn: "从现在开始"},
+                    {en: "a number of", cn: "许多；大量(谓语动词用复数)"},
+                    {en: "the number of", cn: "… 的数量(谓语动词用单数)"}
+                ],
+                "Day 18": [
+                    {en: "object to doing sth.", cn: "反对做某事"},
+                    {en: "a lot of", cn: "许多"},
+                    {en: "kind of", cn: "有点儿"},
+                    {en: "take off", cn: "起飞；脱掉"},
+                    {en: "turn off", cn: "关掉"},
+                    {en: "get off", cn: "下车"},
+                    {en: "offer sb. sth.(offer sth. to sb.)", cn: "给某人提供某物"},
+                    {en: "how often", cn: "多久一次（问频率）"},
+                    {en: "the Olympic Games", cn: "奥林匹克运动会"},
+                    {en: "put on", cn: "穿上；上演"},
+                    {en: "depend on", cn: "依靠"},
+                    {en: "once upon a time", cn: "从前"},
+                    {en: "once in a while", cn: "偶尔"},
+                    {en: "go online", cn: "上网"},
+                    {en: "shop online", cn: "网上购物"},
+                    {en: "not only…but also…", cn: "不但…而且…"},
+                    {en: "open up", cn: "打开；开发"},
+                    {en: "Peking Opera", cn: "京剧"},
+                    {en: "operate on", cn: "给…做手术"},
+                    {en: "in one's opinion", cn: "依某人看"},
+                    {en: "either…or…", cn: "要么…要么…"},
+                    {en: "in order to", cn: "为了"},
+                    {en: "take one's order", cn: "点菜"},
+                    {en: "one...the other", cn: "一个...另一个..."},
+                    {en: "by ourselves", cn: "我们自己"},
+                    {en: "out of", cn: "从…出来；缺乏"},
+                    {en: "go out", cn: "出去"},
+                    {en: "over there", cn: "在那边"},
+                    {en: "go over", cn: "复习"},
+                    {en: "of one's own", cn: "某人自己的"},
+                    {en: "on one's own", cn: "独立地"},
+                    {en: "pack up", cn: "打包；收拾（行李）"},
+                    {en: "a pair of", cn: "一双；一副"},
+                    {en: "a piece of paper", cn: "一张纸"},
+                    {en: "pardon me", cn: "请原谅"}
+                ],
+                "Day 19": [
+                    {en: "take part in", cn: "参加"},
+                    {en: "play a part in", cn: "在…中起作用"},
+                    {en: "pass by", cn: "经过"},
+                    {en: "pass on", cn: "传递"},
+                    {en: "in the past", cn: "在过去(谓语动词用一般过去时)"},
+                    {en: "in the past + 时间段", cn: "在过去多长时间里"},
+                    {en: "be patient with", cn: "对…有耐心"},
+                    {en: "pay for", cn: "为…付款"},
+                    {en: "pay attention to (doing sth.)", cn: "注意"},
+                    {en: "at peace", cn: "处于平静/和平状态"},
+                    {en: "Practice makes perfect.", cn: "熟能生巧"},
+                    {en: "in person", cn: "亲自"},
+                    {en: "on the phone", cn: "在打电话"},
+                    {en: "take a photo (of)", cn: "拍照"},
+                    {en: "play the piano", cn: "弹钢琴"},
+                    {en: "pick up", cn: "捡起；接载；学会"},
+                    {en: "go on a picnic", cn: "去野餐"},
+                    {en: "a piece of", cn: "一片；一块；一件"},
+                    {en: "play ping-pong", cn: "打乒乓球"},
+                    {en: "young pioneer", cn: "少先队员"},
+                    {en: "What a pity!", cn: "真遗憾！"},
+                    {en: "It is a pity that...", cn: "遗憾的是..."},
+                    {en: "take place", cn: "发生"},
+                    {en: "in place of", cn: "代替"},
+                    {en: "plan to do sth.", cn: "计划做某事"},
+                    {en: "make a plan for", cn: "为...做计划"},
+                    {en: "by plane", cn: "乘飞机"},
+                    {en: "play with", cn: "玩…；和…一起玩"},
+                    {en: "play basketball", cn: "打篮球"},
+                    {en: "on the playground", cn: "在操场"},
+                    {en: "with pleasure", cn: "乐意效劳"},
+                    {en: "plenty of", cn: "大量；许多"}
+                ],
+                "Day 20": [
+                    {en: "pocket money", cn: "零钱"},
+                    {en: "point at", cn: "指着"},
+                    {en: "point out", cn: "指出"},
+                    {en: "be polite to", cn: "对…有礼貌"},
+                    {en: "be popular with", cn: "受…欢迎"},
+                    {en: "have/with a population of", cn: "有...人口"},
+                    {en: "as…as possible", cn: "尽可能…"},
+                    {en: "post office", cn: "邮局"},
+                    {en: "pour…into…", cn: "把…倒入…"},
+                    {en: "practice doing sth.", cn: "练习做某事"},
+                    {en: "prefer doing/to do sth.", cn: "更喜欢做某事"},
+                    {en: "prefer…to…", cn: "比起…更喜欢…"},
+                    {en: "prefer to do...rather than do", cn: "宁愿做...不愿做"},
+                    {en: "prepare for", cn: "为…做准备"},
+                    {en: "prepare sth. for sb.", cn: "为某人准备某物"},
+                    {en: "at present", cn: "目前；现在"},
+                    {en: "at a price of", cn: "以...的价格"},
+                    {en: "take pride in(be proud of)", cn: "以…为骄傲"},
+                    {en: "primary school", cn: "小学"},
+                    {en: "the first prize", cn: "一等奖"},
+                    {en: "solve a problem", cn: "解决问题"},
+                    {en: "make progress", cn: "取得进步"},
+                    {en: "make a promise", cn: "许下诺言"},
+                    {en: "protect…from…", cn: "保护…免受…"},
+                    {en: "be proud of", cn: "为…感到骄傲"},
+                    {en: "provide sb. with sth.(provide sth. for sb.)", cn: "为某人提供某物"}
+                ],
+                "Day 21": [
+                    {en: "in public", cn: "公开地；当众"},
+                    {en: "pull down", cn: "拆毁；拉下"},
+                    {en: "pull up", cn: "停下；拔起"},
+                    {en: "punish sb. for (doing)sth.", cn: "因(做)某事惩罚某人"},
+                    {en: "on purpose", cn: "故意地"},
+                    {en: "for the purpose", cn: "为了某个目的"},
+                    {en: "push…away", cn: "把…推开"},
+                    {en: "put on", cn: "穿上；上演"},
+                    {en: "put off", cn: "推迟"},
+                    {en: "put up", cn: "张贴；搭建"},
+                    {en: "out of question", cn: "没问题"},
+                    {en: "out of the question", cn: "不可能的"},
+                    {en: "keep quiet", cn: "保持安静"},
+                    {en: "quite a few", cn: "相当多；不少"},
+                    {en: "on the radio", cn: "通过收音机"},
+                    {en: "raise one's hand", cn: "举手"},
+                    {en: "rather than", cn: "而不是"},
+                    {en: "reach for", cn: "伸手去拿"},
+                    {en: "read books", cn: "读书"},
+                    {en: "be ready for", cn: "为…做好准备"},
+                    {en: "get ready to do sth.", cn: "准备做某事"},
+                    {en: "for this reason", cn: "为此；由于这个原因"},
+                    {en: "the reason for", cn: "...原因"},
+                    {en: "The reason why... is that...", cn: "...的原因是..."},
+                    {en: "The reason is that...", cn: "原因是"},
+                    {en: "recommend sb. sth.(recommend sth. to sb.)", cn: "向某人推荐某物"},
+                    {en: "keep a record of", cn: "记录；记载"},
+                    {en: "break the Olympic record", cn: "打破奥运记录"},
+                    {en: "refuse to do sth.", cn: "拒绝做某事"},
+                    {en: "regret doing sth.", cn: "后悔做过某事"},
+                    {en: "regret to do sth.", cn: "后悔没做某事"},
+                    {en: "remember to do sth.", cn: "记得去做某事"},
+                    {en: "remember doing sth.", cn: "记得做过某事"},
+                    {en: "remind sb. of sth.", cn: "使某人想起某事"},
+                    {en: "remind sb. to do sth.", cn: "提醒某人做某事"},
+                    {en: "reply to", cn: "回答；答复"},
+                    {en: "report to", cn: "向…报告"},
+                    {en: "require sb. to do sth.", cn: "要求某人做某事"}
+                ],
+                "Day 22": [
+                    {en: "do research", cn: "做研究"},
+                    {en: "show respect for", cn: "对…表示尊重"},
+                    {en: "be responsible for", cn: "对…负责"},
+                    {en: "take a rest", cn: "休息一下"},
+                    {en: "as a result", cn: "结果"},
+                    {en: "result in", cn: "导致"},
+                    {en: "return to", cn: "回到；返回"},
+                    {en: "return sth. to sb.", cn: "把某物归还给某人"},
+                    {en: "go for a ride", cn: "去兜风"},
+                    {en: "ride sb. to someplace", cn: "开车送某人去某地"},
+                    {en: "all right", cn: "好；行"},
+                    {en: "right away", cn: "立刻；马上"},
+                    {en: "turn right", cn: "右转"},
+                    {en: "ring sb. up", cn: "打电话给某人"},
+                    {en: "take a risk", cn: "冒险"},
+                    {en: "by the river", cn: "在河边"},
+                    {en: "play a role in", cn: "在…中发挥作用"},
+                    {en: "in a row", cn: "连续；成一排"},
+                    {en: "be against the rules", cn: "违反规则"},
+                    {en: "run away", cn: "逃跑"},
+                    {en: "run out", cn: "用完；耗尽"},
+                    {en: "in a rush", cn: "急忙地"},
+                    {en: "rush hour", cn: "高峰期"},
+                    {en: "on sale", cn: "出售；廉价出售"},
+                    {en: "the same as", cn: "与… 一样"},
+                    {en: "save one's life", cn: "救某人的命"},
+                    {en: "save money", cn: "存钱"},
+                    {en: "say hello to", cn: "向…问好"},
+                    {en: "at school", cn: "在学校"},
+                    {en: "go to school", cn: "去上学"},
+                    {en: "search for", cn: "寻找；搜寻"}
+                ],
+                "Day 23": [
+                    {en: "take/have a seat", cn: "坐下"},
+                    {en: "keep a secret", cn: "保守秘密"},
+                    {en: "see sb. off", cn: "为某人送行"},
+                    {en: "seem to do sth.", cn: "似乎做某事"},
+                    {en: "sell out", cn: "卖光"},
+                    {en: "sell…to…", cn: "把…卖给…"},
+                    {en: "send for", cn: "派人去请"},
+                    {en: "send out", cn: "发出；派遣"},
+                    {en: "make sense", cn: "有意义；讲得通"},
+                    {en: "separate…from…", cn: "把…与…分开"},
+                    {en: "serve as", cn: "担任；充当"},
+                    {en: "set up", cn: "建立；设立"},
+                    {en: "set out", cn: "出发；开始"},
+                    {en: "a set of", cn: "一套..."},
+                    {en: "several hundred", cn: "几百，数百"},
+                    {en: "shake hands with", cn: "与…握手"},
+                    {en: "What a shame!", cn: "真遗憾！"},
+                    {en: "in shape", cn: "在形状上；处于良好状态"},
+                    {en: "share sth. with sb.", cn: "与某人分享某物"},
+                    {en: "by ship", cn: "坐船"},
+                    {en: "a pair of sports shoes", cn: "一双运动鞋"},
+                    {en: "shoot at", cn: "向…射击"},
+                    {en: "go shopping", cn: "去购物"},
+                    {en: "shopping online", cn: "网购"},
+                    {en: "be short of", cn: "缺少；缺乏"},
+                    {en: "shout at", cn: "冲…大声叫嚷"},
+                    {en: "shout to", cn: "对…大声喊"},
+                    {en: "show sb. around", cn: "带领某人参观"},
+                    {en: "show off", cn: "炫耀"},
+                    {en: "show up", cn: "出现"},
+                    {en: "take a shower", cn: "洗淋浴"},
+                    {en: "shut up", cn: "闭嘴；关上"},
+                    {en: "be sick of", cn: "厌恶；厌烦"},
+                    {en: "on the side of", cn: "在…一边；支持"},
+                    {en: "sign up for", cn: "报名参加"},
+                    {en: "in silence", cn: "沉默地"},
+                    {en: "keep silent", cn: "保持沉默"},
+                    {en: "the Silk Road", cn: "丝绸之路"},
+                    {en: "a silver medal", cn: "一枚银牌"},
+                    {en: "be similar to", cn: "与…相似"},
+                    {en: "since then", cn: "从那以后(用现在完成时的标志)"},
+                    {en: "sit down", cn: "坐下"}
+                ],
+                "Day 24": [
+                    {en: "go skating", cn: "去滑冰"},
+                    {en: "go skiing", cn: "去滑雪"},
+                    {en: "go to sleep", cn: "入睡；睡着"},
+                    {en: "slow down", cn: "减速；放慢速度"},
+                    {en: "a smart phone", cn: "一台智能手机"},
+                    {en: "with a smile on one's face", cn: "面带微笑"},
+                    {en: "so…that…", cn: "如此…以至于…"},
+                    {en: "so far", cn: "到目前为止(用现在完成时的标志)"},
+                    {en: "something important", cn: "重要的事情"},
+                    {en: "somewhere interesting", cn: "有趣的地方"},
+                    {en: "as soon as", cn: "一… 就…"},
+                    {en: "soon after", cn: "不久之后"},
+                    {en: "be sorry for", cn: "为…感到抱歉"},
+                    {en: "in the south", cn: "在南方"},
+                    {en: "in one's spare time", cn: "在某人的空闲时间"},
+                    {en: "speak of", cn: "提到；说起"},
+                    {en: "speak to", cn: "对…说话"},
+                    {en: "give a speech", cn: "发表演讲"},
+                    {en: "at high speed", cn: "高速地"},
+                    {en: "spend…on…", cn: "在…上花费（时间、金钱等）"},
+                    {en: "spend…(in) doing sth.", cn: "花费…做某事"},
+                    {en: "the Spring Festival", cn: "春节"}
+                ],
+                "Day 25": [
+                    {en: "on the stage", cn: "在舞台上"},
+                    {en: "stand up", cn: "站起来"},
+                    {en: "can't stand", cn: "无法忍受"},
+                    {en: "start with", cn: "以…开始"},
+                    {en: "start doing/to do sth.", cn: "开始做某事"},
+                    {en: "the United States", cn: "美国"},
+                    {en: "a bus station", cn: "一个公交站"},
+                    {en: "stay at home", cn: "待在家里"},
+                    {en: "stay up", cn: "熬夜"},
+                    {en: "steal sth. from sb.", cn: "从某人那里偷某物"},
+                    {en: "step by step", cn: "逐步地"},
+                    {en: "take steps to do sth.", cn: "采取措施做某事"},
+                    {en: "stick to (doin)g sth.", cn: "坚持(做)某事"},
+                    {en: "stop doing sth.", cn: "停止做某事"},
+                    {en: "stop to do sth.", cn: "停下来去做另一件事"},
+                    {en: "stop sb. (from) doing sth.", cn: "阻止某人做某事"},
+                    {en: "go straight", cn: "径直往前走"},
+                    {en: "feel stressed", cn: "感到压力"},
+                    {en: "be strict with sb.", cn: "对某人严格要求"},
+                    {en: "be strict in sth.", cn: "对某事要求严格"},
+                    {en: "succeed (in) doing sth.", cn: "成功做某事"},
+                    {en: "such as (doing sth.)", cn: "例如(做某事)"},
+                    {en: "such…that…", cn: "如此…以至于…"},
+                    {en: "all of a sudden", cn: "突然"},
+                    {en: "suffer from", cn: "遭受；患有"},
+                    {en: "suggest doing sth.", cn: "建议做某事"},
+                    {en: "suggest sb. doing sth.", cn: "建议某人做某事"},
+                    {en: "summer camp", cn: "夏令营"},
+                    {en: "in the sun", cn: "在太阳下，在阳光下"},
+                    {en: "be supposed to do sth.", cn: "应该做某事"},
+                    {en: "be sure of", cn: "确信；对…有把握"},
+                    {en: "make sure", cn: "确保；查明"},
+                    {en: "to one's surprise", cn: "令某人惊讶的是"},
+                    {en: "be surprised at", cn: "对...感到惊讶"},
+                    {en: "make a survey", cn: "做调查"},
+                    {en: "go swimming", cn: "去游泳"},
+                    {en: "a symbol of", cn: "...的象征"}
+                ],
+                "Day 26": [
+                    {en: "at the table", cn: "在餐桌边；在桌子旁"},
+                    {en: "It takes sb. time/money to do sth.", cn: "花某人时间/钱做某事"},
+                    {en: "take off", cn: "起飞；脱掉"},
+                    {en: "take care of", cn: "照顾；照料"},
+                    {en: "have a talent for", cn: "有...天赋"},
+                    {en: "talk about", cn: "谈论；讨论"},
+                    {en: "talk to/with sb.", cn: "和某人交谈"},
+                    {en: "taste good", cn: "味道好"},
+                    {en: "take a taxi/by taxi", cn: "乘出租车"},
+                    {en: "teach sb. sth.(teach sth. to sb.)", cn: "教某人某事"},
+                    {en: "teach sb. to do sth.", cn: "教某人做某事"},
+                    {en: "tell sb. about sth.", cn: "告诉某人关于某事"},
+                    {en: "tell sb. to do sth.", cn: "告诉某人做某事"},
+                    {en: "take one's temperature", cn: "测某人的体温"},
+                    {en: "play tennis", cn: "打网球"},
+                    {en: "put up a tent", cn: "搭起帐篷"},
+                    {en: "in term of", cn: "就...而言"},
+                    {en: "thank sb. for (doing) sth.", cn: "因(做)某事而感谢某人"},
+                    {en: "by themselves", cn: "他们独自地"},
+                    {en: "since then", cn: "从那以后"},
+                    {en: "from then on", cn: "从那以后"},
+                    {en: "there be", cn: "有"},
+                    {en: "think about", cn: "思考；考虑"},
+                    {en: "think of", cn: "想起；认为"},
+                    {en: "be thirsty for", cn: "渴望"},
+                    {en: "even though", cn: "即使"},
+                    {en: "throw away", cn: "扔掉；抛弃"},
+                    {en: "a ticket for", cn: "一张...票"},
+                    {en: "a movie ticket", cn: "一张电影票"},
+                    {en: "tidy up", cn: "整理，收拾"}
+                ],
+                "Day 27": [
+                    {en: "tie up", cn: "捆绑；阻碍"},
+                    {en: "all the time", cn: "一直"},
+                    {en: "at the same time", cn: "同时"},
+                    {en: "in time", cn: "及时"},
+                    {en: "on time", cn: "按时"},
+                    {en: "be tired of", cn: "对…感到厌倦"},
+                    {en: "be tired out", cn: "筋疲力尽"},
+                    {en: "get together", cn: "聚会；聚集"},
+                    {en: "the day after tomorrow", cn: "后天"},
+                    {en: "tons of", cn: "大量的"},
+                    {en: "too…to…", cn: "太…而不能…"},
+                    {en: "on top of", cn: "在…上面；除…之外"},
+                    {en: "in total", cn: "总共；总计"},
+                    {en: "keep in touch with", cn: "与…保持联系"},
+                    {en: "Canton Tower", cn: "广州塔，小蛮腰"},
+                    {en: "traffic jam/accident", cn: "交通阻塞/事故"},
+                    {en: "take a train/by train", cn: "坐火车"},
+                    {en: "translate...into...", cn: "把...翻译成"},
+                    {en: "travel to someplace", cn: "到某地旅游"},
+                    {en: "treat…as…", cn: "把…当作…"},
+                    {en: "plant a tree", cn: "植树"},
+                    {en: "take a trip(to someplace)", cn: "去(某地)旅行"},
+                    {en: "have trouble (in) doing sth.", cn: "做某事有困难"},
+                    {en: "a pair of trousers", cn: "一条裤子"},
+                    {en: "come true", cn: "实现"},
+                    {en: "face the truth", cn: "面对真相"},
+                    {en: "try on", cn: "试穿"},
+                    {en: "have a try", cn: "试一试"},
+                    {en: "try to do sth.", cn: "努力做某事"},
+                    {en: "try doing sth.", cn: "试着做某事"},
+                    {en: "try one's best to do sth.", cn: "尽力做某事"},
+                    {en: "turn on", cn: "打开"},
+                    {en: "turn off", cn: "关闭"},
+                    {en: "turn up", cn: "调大；出现"},
+                    {en: "turn down", cn: "调小；拒绝"},
+                    {en: "watch TV", cn: "看电视"},
+                    {en: "on TV", cn: "在电视上"},
+                    {en: "an ugly dog", cn: "一条丑陋的狗"},
+                    {en: "an umbrella", cn: "一把雨伞"},
+                    {en: "school uniform", cn: "校服"}
+                ],
+                "Day 28": [
+                    {en: "not…until…", cn: "直到…才…"},
+                    {en: "up and down", cn: "上上下下"},
+                    {en: "give up", cn: "放弃"},
+                    {en: "use up", cn: "用完；耗尽"},
+                    {en: "make use of", cn: "利用"},
+                    {en: "as usual", cn: "像往常一样"},
+                    {en: "on vacation", cn: "在度假"},
+                    {en: "take a vacation", cn: "去度假"},
+                    {en: "in one's view", cn: "在某人看来，某人认为"},
+                    {en: "play the violin", cn: "拉小提琴"},
+                    {en: "pay a visit to", cn: "拜访/参观..."},
+                    {en: "in a low voice", cn: "低声地"},
+                    {en: "play volleyball", cn: "打排球"},
+                    {en: "volunteer to do sth.", cn: "自愿做某事"},
+                    {en: "vote for", cn: "投票支持"},
+                    {en: "vote on", cn: "对…进行表决"},
+                    {en: "wait for", cn: "等待"},
+                    {en: "wake up", cn: "醒来；叫醒"},
+                    {en: "go for a walk", cn: "去散步"},
+                    {en: "want to do sth.", cn: "想要做某事"},
+                    {en: "at war", cn: "在交战，处于交战状态"},
+                    {en: "warm up", cn: "热身；变暖"},
+                    {en: "warn sb. of sth.", cn: "警告某人某事"},
+                    {en: "warn sb. not to do sth.", cn: "警告某人不要做某事"},
+                    {en: "wash away", cn: "冲走；洗掉"},
+                    {en: "a waste of", cn: "浪费…"},
+                    {en: "watch out", cn: "小心；当心"},
+                    {en: "in the way", cn: "妨碍；挡道"},
+                    {en: "in a way", cn: "在某种程度上"},
+                    {en: "on one's way to", cn: "在某人去...的路上"},
+                    {en: "by the way", cn: "顺便说一下"},
+                    {en: "a way to do sth.", cn: "做某事的方法"},
+                    {en: "a way of doing sth.", cn: "做某事的方法"},
+                    {en: "What's the weather like?", cn: "天气怎么样？"},
+                    {en: "on the school website", cn: "在校园网上"},
+                    {en: "on the weekend", cn: "在周末"}
+                ],
+                "Day 29": [
+                    {en: "welcome to", cn: "欢迎来到..."},
+                    {en: "give sb. a warm welcome", cn: "热烈欢迎某人"},
+                    {en: "as well", cn: "也；同样"},
+                    {en: "well done", cn: "做得好"},
+                    {en: "in the west", cn: "在西方"},
+                    {en: "what about", cn: "怎么样；…好不好"},
+                    {en: "whether…or…", cn: "是…还是…；不管…还是…"},
+                    {en: "in a while", cn: "一会儿"},
+                    {en: "once in a while", cn: "时不时地"},
+                    {en: "the whole country", cn: "全国"},
+                    {en: "a strong will", cn: "坚强的意志"},
+                    {en: "win+奖品/名次/比赛", cn: "赢得"},
+                    {en: "in winter", cn: "在冬天"},
+                    {en: "in winter holiday", cn: "在寒假"},
+                    {en: "wish to do sth.", cn: "希望做某事"},
+                    {en: "wish sb. sth.", cn: "祝某人…"},
+                    {en: "without doing sth.", cn: "没有做某事"},
+                    {en: "natural wonder", cn: "自然奇观"},
+                    {en: "in a word", cn: "总之；一句话"},
+                    {en: "word by word", cn: "逐字地"},
+                    {en: "work out", cn: "解决；算出；制定出"},
+                    {en: "in the world", cn: "在世界上"},
+                    {en: "all over the world(the whole world)", cn: "全世界"},
+                    {en: "worry about(be worried about)", cn: "担心；担忧"},
+                    {en: "from bad to worse", cn: "每况愈下"},
+                    {en: "be worth doing", cn: "值得做…"},
+                    {en: "would like to do sth.", cn: "想做某事"},
+                    {en: "write down", cn: "写下；记下"},
+                    {en: "write (a letter) to sb.", cn: "给某人写信"},
+                    {en: "be wrong with", cn: "有毛病；出问题"},
+                    {en: "go wrong", cn: "出错；出故障"},
+                    {en: "the day before yesterday", cn: "前天"},
+                    {en: "not yet", cn: "还没有"},
+                    {en: "the young", cn: "年轻人"},
+                    {en: "by yourself", cn: "独自地；单独地"},
+                    {en: "below zero", cn: "零度以下"}
+                ]
+            };
+            
+            // 创建汉译英数据（反向映射）
+            const cnToEnVocab = {};
+            for (const day in enToCnVocab) {
+                cnToEnVocab[day] = [];
+                enToCnVocab[day].forEach(item => {
+                    cnToEnVocab[day].push({cn: item.cn, en: item.en});
+                });
+            }
+            
+            // 从本地存储加载数据
+            let calledStudents = JSON.parse(localStorage.getItem('calledStudents')) || [];
+            let callHistory = JSON.parse(localStorage.getItem('callHistory')) || [];
+            
+            // 抽查记录（用于去重）
+            let enToCnUsed = JSON.parse(localStorage.getItem('enToCnUsed')) || {};
+            let cnToEnUsed = JSON.parse(localStorage.getItem('cnToEnUsed')) || {};
+            
+            // 初始化抽查记录
+            for (let i = 1; i <= 29; i++) {
+                const dayKey = `Day ${i}`;
+                if (!enToCnUsed[dayKey]) enToCnUsed[dayKey] = [];
+                if (!cnToEnUsed[dayKey]) cnToEnUsed[dayKey] = [];
+            }
+            
+            let enToCnHistory = JSON.parse(localStorage.getItem('enToCnHistory')) || [];
+            let cnToEnHistory = JSON.parse(localStorage.getItem('cnToEnHistory')) || [];
+            
+            // 初始化应用
+            function initApp() {
+                updateCallHistory();
+                initEnToCnUnitButtons();
+                initCnToEnUnitButtons();
+                updateEnToCnHistory();
+                updateCnToEnHistory();
+                
+                // 点名功能事件监听
+                callBtn.addEventListener('click', toggleCall);
+                callResetBtn.addEventListener('click', resetCall);
+                
+                // 英译汉功能事件监听
+                enToCnBtn.addEventListener('click', startEnToCnTest);
+                showCnAnswerBtn.addEventListener('click', showCnAnswer);
+                resetEnToCnBtn.addEventListener('click', resetCurrentEnToCnUnit);
+                
+                // 汉译英功能事件监听
+                cnToEnBtn.addEventListener('click', startCnToEnTest);
+                showEnAnswerBtn.addEventListener('click', showEnAnswer);
+                resetCnToEnBtn.addEventListener('click', resetCurrentCnToEnUnit);
+                
+                // 标签页切换
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // 移除所有active类
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        // 激活当前标签
+                        this.classList.add('active');
+                        const tabId = this.getAttribute('data-tab');
+                        document.getElementById(`${tabId}-tab`).classList.add('active');
+                        
+                        // 如果切换到其他标签，确保停止可能正在进行的点名
+                        if (tabId !== 'call' && isCalling) {
+                            stopCall();
+                        }
+                        
+                        // 更新进度显示
+                        if (tabId === 'en-to-cn') {
+                            updateEnToCnProgress();
+                        } else if (tabId === 'cn-to-en') {
+                            updateCnToEnProgress();
+                        }
+                    });
+                });
+                
+                // 更新进度显示
+                updateEnToCnProgress();
+                updateCnToEnProgress();
+                
+                // 显示初始进度信息
+                console.log("应用初始化完成，当前英译汉单元:", currentEnToCnUnit);
+                console.log("当前汉译英单元:", currentCnToEnUnit);
+            }
+            
+            // 获取未抽查的随机索引（英译汉）
+            function getRandomUnusedIndexEnToCn(dayKey) {
+                const vocabList = enToCnVocab[dayKey] || [];
+                const usedIndices = enToCnUsed[dayKey] || [];
+                
+                // 如果所有词汇都已抽查，重置抽查记录
+                if (usedIndices.length >= vocabList.length) {
+                    return null; // 表示需要重置
+                }
+                
+                // 获取所有未抽查的索引
+                const allIndices = Array.from({length: vocabList.length}, (_, i) => i);
+                const unusedIndices = allIndices.filter(index => !usedIndices.includes(index));
+                
+                // 随机选择一个未抽查的索引
+                const randomIndex = Math.floor(Math.random() * unusedIndices.length);
+                return unusedIndices[randomIndex];
+            }
+            
+            // 获取未抽查的随机索引（汉译英）
+            function getRandomUnusedIndexCnToEn(dayKey) {
+                const vocabList = cnToEnVocab[dayKey] || [];
+                const usedIndices = cnToEnUsed[dayKey] || [];
+                
+                // 如果所有词汇都已抽查，重置抽查记录
+                if (usedIndices.length >= vocabList.length) {
+                    return null; // 表示需要重置
+                }
+                
+                // 获取所有未抽查的索引
+                const allIndices = Array.from({length: vocabList.length}, (_, i) => i);
+                const unusedIndices = allIndices.filter(index => !usedIndices.includes(index));
+                
+                // 随机选择一个未抽查的索引
+                const randomIndex = Math.floor(Math.random() * unusedIndices.length);
+                return unusedIndices[randomIndex];
+            }
+            
+            // 初始化英译汉单元按钮
+            function initEnToCnUnitButtons() {
+                enToCnUnitButtonsContainer.innerHTML = '';
+                
+                for (let i = 1; i <= 29; i++) {
+                    const dayKey = `Day ${i}`;
+                    
+                    // 创建单元按钮
+                    const unitBtn = document.createElement('button');
+                    unitBtn.className = `unit-btn en-to-cn-btn ${dayKey === currentEnToCnUnit ? 'active' : ''}`;
+                    unitBtn.dataset.unit = dayKey;
+                    unitBtn.textContent = dayKey;
+                    
+                    unitBtn.addEventListener('click', function() {
+                        selectEnToCnUnit(dayKey);
+                    });
+                    
+                    enToCnUnitButtonsContainer.appendChild(unitBtn);
+                }
+            }
+            
+            // 初始化汉译英单元按钮
+            function initCnToEnUnitButtons() {
+                cnToEnUnitButtonsContainer.innerHTML = '';
+                
+                for (let i = 1; i <= 29; i++) {
+                    const dayKey = `Day ${i}`;
+                    
+                    // 创建单元按钮
+                    const unitBtn = document.createElement('button');
+                    unitBtn.className = `unit-btn cn-to-en-btn ${dayKey === currentCnToEnUnit ? 'active' : ''}`;
+                    unitBtn.dataset.unit = dayKey;
+                    unitBtn.textContent = dayKey;
+                    
+                    unitBtn.addEventListener('click', function() {
+                        selectCnToEnUnit(dayKey);
+                    });
+                    
+                    cnToEnUnitButtonsContainer.appendChild(unitBtn);
+                }
+            }
+            
+            // 更新英译汉进度显示
+            function updateEnToCnProgress() {
+                const vocabList = enToCnVocab[currentEnToCnUnit] || [];
+                const usedIndices = enToCnUsed[currentEnToCnUnit] || [];
+                const usedCount = usedIndices.length;
+                const totalCount = vocabList.length;
+                
+                console.log(`更新英译汉进度: ${currentEnToCnUnit}, 已抽查: ${usedCount}/${totalCount}`);
+                
+                if (totalCount > 0) {
+                    const percentage = Math.round((usedCount / totalCount) * 100);
+                    enToCnProgressText.textContent = `${currentEnToCnUnit} - 已抽查: ${usedCount}/${totalCount} (${percentage}%)`;
+                    enToCnProgressFill.style.width = `${percentage}%`;
+                } else {
+                    enToCnProgressText.textContent = `${currentEnToCnUnit} - 暂无词汇数据`;
+                    enToCnProgressFill.style.width = `0%`;
+                }
+            }
+            
+            // 更新汉译英进度显示
+            function updateCnToEnProgress() {
+                const vocabList = cnToEnVocab[currentCnToEnUnit] || [];
+                const usedIndices = cnToEnUsed[currentCnToEnUnit] || [];
+                const usedCount = usedIndices.length;
+                const totalCount = vocabList.length;
+                
+                console.log(`更新汉译英进度: ${currentCnToEnUnit}, 已抽查: ${usedCount}/${totalCount}`);
+                
+                if (totalCount > 0) {
+                    const percentage = Math.round((usedCount / totalCount) * 100);
+                    cnToEnProgressText.textContent = `${currentCnToEnUnit} - 已抽查: ${usedCount}/${totalCount} (${percentage}%)`;
+                    cnToEnProgressFill.style.width = `${percentage}%`;
+                } else {
+                    cnToEnProgressText.textContent = `${currentCnToEnUnit} - 暂无词汇数据`;
+                    cnToEnProgressFill.style.width = `0%`;
+                }
+            }
+            
+            // 选择英译汉单元
+            function selectEnToCnUnit(dayKey) {
+                currentEnToCnUnit = dayKey;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.en-to-cn-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.unit === dayKey) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 更新显示
+                enDisplay.textContent = "准备抽查";
+                cnAnswerDisplay.textContent = "点击显示答案";
+                cnAnswerDisplay.className = "answer-display answer-hidden";
+                enToCnMessage.textContent = "";
+                
+                // 重置当前索引
+                currentEnToCnIndex = -1;
+                
+                // 更新进度显示
+                updateEnToCnProgress();
+            }
+            
+            // 选择汉译英单元
+            function selectCnToEnUnit(dayKey) {
+                currentCnToEnUnit = dayKey;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.cn-to-en-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.unit === dayKey) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 更新显示
+                cnDisplay.textContent = "准备抽查";
+                enAnswerDisplay.textContent = "点击显示答案";
+                enAnswerDisplay.className = "answer-display answer-hidden";
+                cnToEnMessage.textContent = "";
+                
+                // 重置当前索引
+                currentCnToEnIndex = -1;
+                
+                // 更新进度显示
+                updateCnToEnProgress();
+            }
+            
+            // 点名功能
+            function toggleCall() {
+                if (isCalling) {
+                    stopCall();
+                } else {
+                    startCall();
+                }
+            }
+            
+            function startCall() {
+                if (calledStudents.length >= students.length) {
+                    alert('所有学生都已被点名！请重置名单后再试。');
+                    return;
+                }
+                
+                isCalling = true;
+                callBtn.innerHTML = '<i class="fas fa-stop"></i> 停止点名';
+                callBtn.classList.add('flashing');
+                callNameDisplay.classList.remove('placeholder');
+                callNameDisplay.style.color = '#FFD700';
+                callMessage.textContent = '';
+                
+                // 开始滚动效果
+                let rollCount = 0;
+                callInterval = setInterval(() => {
+                    // 获取未点名的学生
+                    const remainingStudents = students.filter(student => !calledStudents.includes(student));
+                    
+                    if (remainingStudents.length === 0) {
+                        stopCall();
+                        return;
+                    }
+                    
+                    // 随机选择一个学生
+                    const randomIndex = Math.floor(Math.random() * remainingStudents.length);
+                    const randomStudent = remainingStudents[randomIndex];
+                    
+                    callNameDisplay.textContent = randomStudent;
+                    
+                    // 每滚动10次改变一次颜色
+                    rollCount++;
+                    if (rollCount % 10 === 0) {
+                        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#FF9F43', '#6BCF7F'];
+                        callNameDisplay.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    
+                }, 80);
+            }
+            
+            function stopCall() {
+                if (!isCalling) return;
+                
+                isCalling = false;
+                clearInterval(callInterval);
+                callBtn.innerHTML = '<i class="fas fa-play"></i> 开始随机点名';
+                callBtn.classList.remove('flashing');
+                
+                // 获取未点名的学生
+                const remainingStudents = students.filter(student => !calledStudents.includes(student));
+                
+                if (remainingStudents.length === 0) {
+                    callNameDisplay.textContent = "所有学生已点名";
+                    callNameDisplay.style.color = 'white';
+                    return;
+                }
+                
+                // 随机选择一个学生
+                const randomIndex = Math.floor(Math.random() * remainingStudents.length);
+                const selectedStudent = remainingStudents[randomIndex];
+                
+                // 添加到已点名列表
+                calledStudents.push(selectedStudent);
+                
+                // 添加到历史记录
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                callHistory.push(`${selectedStudent} (${timeString})`);
+                
+                // 更新显示
+                callNameDisplay.textContent = selectedStudent;
+                callNameDisplay.style.color = '#FFD700';
+                callMessage.textContent = `恭喜 ${selectedStudent} 被选中！`;
+                
+                // 更新UI
+                updateCallHistory();
+                saveToLocalStorage();
+            }
+            
+            function resetCall() {
+                if (calledStudents.length === 0 && callHistory.length === 0) {
+                    alert('还没有学生被点名！');
+                    return;
+                }
+                
+                if (confirm('确定要重置点名记录吗？这将重新启用所有学生。')) {
+                    calledStudents = [];
+                    callHistory = [];
+                    callNameDisplay.textContent = '准备点名';
+                    callNameDisplay.className = 'name-display placeholder';
+                    callNameDisplay.style.color = 'rgba(255, 255, 255, 0.8)';
+                    callMessage.textContent = '';
+                    updateCallHistory();
+                    saveToLocalStorage();
+                }
+            }
+            
+            function updateCallHistory() {
+                callHistoryList.innerHTML = '';
+                
+                // 只显示最近15条记录
+                const recentHistory = callHistory.slice(-15);
+                
+                if (recentHistory.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'history-item';
+                    emptyMsg.innerHTML = `<div style="text-align: center; width: 100%; color: #888; font-style: italic;">暂无点名记录</div>`;
+                    callHistoryList.appendChild(emptyMsg);
+                    return;
+                }
+                
+                recentHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    // 提取学生姓名和时间
+                    const match = item.match(/(.+) \((.+)\)/);
+                    if (match) {
+                        historyItem.innerHTML = `
+                            <span>${match[1]}</span>
+                            <span class="time-badge">${match[2]}</span>
+                        `;
+                    } else {
+                        historyItem.textContent = item;
+                    }
+                    
+                    callHistoryList.appendChild(historyItem);
+                });
+            }
+            
+            // 英译汉抽查功能（去重版本）
+            function startEnToCnTest() {
+                const currentUnitVocab = enToCnVocab[currentEnToCnUnit] || [];
+                
+                if (currentUnitVocab.length === 0) {
+                    alert(`${currentEnToCnUnit} 中没有词汇！`);
+                    return;
+                }
+                
+                // 获取一个未抽查的随机索引
+                const randomIndex = getRandomUnusedIndexEnToCn(currentEnToCnUnit);
+                
+                if (randomIndex === null) {
+                    // 所有词汇都已抽查，询问是否重置
+                    if (confirm(`${currentEnToCnUnit} 的所有词汇都已抽查完毕！是否重置抽查记录重新开始？`)) {
+                        resetCurrentEnToCnUnit();
+                        // 重新获取一个随机索引
+                        const newRandomIndex = getRandomUnusedIndexEnToCn(currentEnToCnUnit);
+                        if (newRandomIndex === null) {
+                            alert('重置后仍然没有词汇可用！');
+                            return;
+                        }
+                        currentEnToCnIndex = newRandomIndex;
+                    } else {
+                        return;
+                    }
+                } else {
+                    currentEnToCnIndex = randomIndex;
+                }
+                
+                const selectedVocab = currentUnitVocab[currentEnToCnIndex];
+                
+                // 记录这个索引已被抽查
+                if (!enToCnUsed[currentEnToCnUnit].includes(currentEnToCnIndex)) {
+                    enToCnUsed[currentEnToCnUnit].push(currentEnToCnIndex);
+                }
+                
+                // 更新显示
+                enDisplay.textContent = selectedVocab.en;
+                enDisplay.style.color = '#FFD700';
+                cnAnswerDisplay.textContent = "???";
+                cnAnswerDisplay.className = "answer-display answer-hidden";
+                enToCnMessage.textContent = `${currentEnToCnUnit} 的词汇`;
+                
+                // 添加到历史记录
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                enToCnHistory.push(`${selectedVocab.en} → ${selectedVocab.cn} (${currentEnToCnUnit}, ${timeString})`);
+                
+                // 更新UI
+                updateEnToCnHistory();
+                updateEnToCnProgress();
+                saveToLocalStorage();
+                
+                console.log(`英译汉抽查: ${selectedVocab.en} -> ${selectedVocab.cn}`);
+            }
+            
+            function showCnAnswer() {
+                const currentUnitVocab = enToCnVocab[currentEnToCnUnit] || [];
+                
+                if (currentEnToCnIndex === -1 || currentUnitVocab.length === 0) {
+                    alert('请先抽查一个词汇！');
+                    return;
+                }
+                
+                const selectedVocab = currentUnitVocab[currentEnToCnIndex];
+                cnAnswerDisplay.textContent = selectedVocab.cn;
+                cnAnswerDisplay.classList.remove('answer-hidden');
+                enToCnMessage.textContent = `答案: ${selectedVocab.cn}`;
+            }
+            
+            // 重置当前英译汉单元的抽查记录
+            function resetCurrentEnToCnUnit() {
+                if (confirm(`确定要重置 ${currentEnToCnUnit} 的抽查记录吗？这将清空该单元的所有抽查记录。`)) {
+                    enToCnUsed[currentEnToCnUnit] = [];
+                    currentEnToCnIndex = -1;
+                    enDisplay.textContent = "准备抽查";
+                    cnAnswerDisplay.textContent = "点击显示答案";
+                    cnAnswerDisplay.className = "answer-display answer-hidden";
+                    enToCnMessage.textContent = `${currentEnToCnUnit} 的抽查记录已重置`;
+                    
+                    // 更新进度显示
+                    updateEnToCnProgress();
+                    saveToLocalStorage();
+                }
+            }
+            
+            // 汉译英抽查功能（去重版本）
+            function startCnToEnTest() {
+                const currentUnitVocab = cnToEnVocab[currentCnToEnUnit] || [];
+                
+                if (currentUnitVocab.length === 0) {
+                    alert(`${currentCnToEnUnit} 中没有词汇！`);
+                    return;
+                }
+                
+                // 获取一个未抽查的随机索引
+                const randomIndex = getRandomUnusedIndexCnToEn(currentCnToEnUnit);
+                
+                if (randomIndex === null) {
+                    // 所有词汇都已抽查，询问是否重置
+                    if (confirm(`${currentCnToEnUnit} 的所有词汇都已抽查完毕！是否重置抽查记录重新开始？`)) {
+                        resetCurrentCnToEnUnit();
+                        // 重新获取一个随机索引
+                        const newRandomIndex = getRandomUnusedIndexCnToEn(currentCnToEnUnit);
+                        if (newRandomIndex === null) {
+                            alert('重置后仍然没有词汇可用！');
+                            return;
+                        }
+                        currentCnToEnIndex = newRandomIndex;
+                    } else {
+                        return;
+                    }
+                } else {
+                    currentCnToEnIndex = randomIndex;
+                }
+                
+                const selectedVocab = currentUnitVocab[currentCnToEnIndex];
+                
+                // 记录这个索引已被抽查
+                if (!cnToEnUsed[currentCnToEnUnit].includes(currentCnToEnIndex)) {
+                    cnToEnUsed[currentCnToEnUnit].push(currentCnToEnIndex);
+                }
+                
+                // 更新显示
+                cnDisplay.textContent = selectedVocab.cn;
+                cnDisplay.style.color = '#FFD700';
+                enAnswerDisplay.textContent = "???";
+                enAnswerDisplay.className = "answer-display answer-hidden";
+                cnToEnMessage.textContent = `${currentCnToEnUnit} 的词汇`;
+                
+                // 添加到历史记录
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                cnToEnHistory.push(`${selectedVocab.cn} → ${selectedVocab.en} (${currentCnToEnUnit}, ${timeString})`);
+                
+                // 更新UI
+                updateCnToEnHistory();
+                updateCnToEnProgress();
+                saveToLocalStorage();
+                
+                console.log(`汉译英抽查: ${selectedVocab.cn} -> ${selectedVocab.en}`);
+            }
+            
+            function showEnAnswer() {
+                const currentUnitVocab = cnToEnVocab[currentCnToEnUnit] || [];
+                
+                if (currentCnToEnIndex === -1 || currentUnitVocab.length === 0) {
+                    alert('请先抽查一个词汇！');
+                    return;
+                }
+                
+                const selectedVocab = currentUnitVocab[currentCnToEnIndex];
+                enAnswerDisplay.textContent = selectedVocab.en;
+                enAnswerDisplay.classList.remove('answer-hidden');
+                cnToEnMessage.textContent = `答案: ${selectedVocab.en}`;
+            }
+            
+            // 重置当前汉译英单元的抽查记录
+            function resetCurrentCnToEnUnit() {
+                if (confirm(`确定要重置 ${currentCnToEnUnit} 的抽查记录吗？这将清空该单元的所有抽查记录。`)) {
+                    cnToEnUsed[currentCnToEnUnit] = [];
+                    currentCnToEnIndex = -1;
+                    cnDisplay.textContent = "准备抽查";
+                    enAnswerDisplay.textContent = "点击显示答案";
+                    enAnswerDisplay.className = "answer-display answer-hidden";
+                    cnToEnMessage.textContent = `${currentCnToEnUnit} 的抽查记录已重置`;
+                    
+                    // 更新进度显示
+                    updateCnToEnProgress();
+                    saveToLocalStorage();
+                }
+            }
+            
+            // 工具函数
+            function saveToLocalStorage() {
+                localStorage.setItem('calledStudents', JSON.stringify(calledStudents));
+                localStorage.setItem('callHistory', JSON.stringify(callHistory));
+                localStorage.setItem('enToCnUsed', JSON.stringify(enToCnUsed));
+                localStorage.setItem('cnToEnUsed', JSON.stringify(cnToEnUsed));
+                localStorage.setItem('enToCnHistory', JSON.stringify(enToCnHistory));
+                localStorage.setItem('cnToEnHistory', JSON.stringify(cnToEnHistory));
+            }
+            
+            function updateEnToCnHistory() {
+                enToCnHistoryList.innerHTML = '';
+                
+                // 只显示最近15条记录
+                const recentHistory = enToCnHistory.slice(-15);
+                
+                if (recentHistory.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'history-item';
+                    emptyMsg.innerHTML = `<div style="text-align: center; width: 100%; color: #888; font-style: italic;">暂无抽查记录</div>`;
+                    enToCnHistoryList.appendChild(emptyMsg);
+                    return;
+                }
+                
+                recentHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    // 提取词汇、单元和时间
+                    const match = item.match(/(.+) → (.+) \((Day \d+), (.+)\)/);
+                    if (match) {
+                        historyItem.innerHTML = `
+                            <span>${match[1]} → ${match[2]}</span>
+                            <span class="unit-badge">${match[3]}</span>
+                            <span class="time-badge">${match[4]}</span>
+                        `;
+                    } else {
+                        historyItem.textContent = item;
+                    }
+                    
+                    enToCnHistoryList.appendChild(historyItem);
+                });
+            }
+            
+            function updateCnToEnHistory() {
+                cnToEnHistoryList.innerHTML = '';
+                
+                // 只显示最近15条记录
+                const recentHistory = cnToEnHistory.slice(-15);
+                
+                if (recentHistory.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'history-item';
+                    emptyMsg.innerHTML = `<div style="text-align: center; width: 100%; color: #888; font-style: italic;">暂无抽查记录</div>`;
+                    cnToEnHistoryList.appendChild(emptyMsg);
+                    return;
+                }
+                
+                recentHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    // 提取词汇、单元和时间
+                    const match = item.match(/(.+) → (.+) \((Day \d+), (.+)\)/);
+                    if (match) {
+                        historyItem.innerHTML = `
+                            <span>${match[1]} → ${match[2]}</span>
+                            <span class="cn-to-en-badge">${match[3]}</span>
+                            <span class="time-badge">${match[4]}</span>
+                        `;
+                    } else {
+                        historyItem.textContent = item;
+                    }
+                    
+                    cnToEnHistoryList.appendChild(historyItem);
+                });
+            }
+            
+            // 页面加载时初始化
+            initApp();
+        });
+    </script>
+</body>
+</html>
